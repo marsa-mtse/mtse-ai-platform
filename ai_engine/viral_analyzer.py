@@ -66,3 +66,45 @@ def analyze_virality(content_text, has_media=False, target_audience="General"):
         "feedback": feedback,
         "is_viral_candidate": score >= 80
     }
+
+def rewrite_for_virality(content_text, tone="Viral"):
+    """
+    Simulates AI rewriting of content to maximize virality.
+    In production, this would use a real LLM.
+    """
+    
+    prefixes = [
+        "🔥 السر اللي الكل بيدور عليه: ",
+        "🚀 أخيراً، الحل النهائي لـ: ",
+        "✨ مش هتصدق النتيجة لما تجرب: ",
+        "💡 نصيحة من خبير: ",
+        "⚡ عاجل وحصري: "
+    ]
+    
+    suffixes = [
+        "\n\n👇 اضغط الرابط في البايو للتفاصيل",
+        "\n\n🔥 شير عشان الكل يستفيد",
+        "\n\n📝 منشن صاحبك اللي محتاج يشوف ده",
+        "\n\n✨ عرض خاص لفترة محدودة جداً",
+        "\n\n🚀 انضم لأقوى مجتمع ماركتينج الآن"
+    ]
+    
+    hashtags = " #تسويق #بيزنس #نمو #MTSE #AI #viral"
+    
+    variations = []
+    import random
+    
+    for i in range(3):
+        prefix = random.choice(prefixes)
+        suffix = random.choice(suffixes)
+        
+        # Simple transformation logic
+        words = content_text.split()
+        if len(words) > 10:
+            core_content = " ".join(words[:10]) + "..."
+        else:
+            core_content = content_text
+            
+        variations.append(f"{prefix}{core_content}{suffix}{hashtags}")
+        
+    return variations

@@ -53,108 +53,114 @@ PREMIUM_CSS = """
     /* Main Theme */
     :root {
         --primary: #6366f1;
-        --primary-light: #818cf8;
-        --primary-dark: #4f46e5;
-        --accent: #06b6d4;
+        --primary-light: #a5b4fc;
+        --primary-dark: #4338ca;
+        --accent: #0ea5e9;
         --success: #10b981;
         --warning: #f59e0b;
         --danger: #ef4444;
         --bg-dark: #0f172a;
-        --bg-card: #1e293b;
-        --bg-card-hover: #334155;
-        --text-primary: #f1f5f9;
+        --bg-card: rgba(30, 41, 59, 0.7);
+        --bg-card-hover: rgba(51, 65, 85, 0.8);
+        --text-primary: #f8fafc;
         --text-secondary: #94a3b8;
-        --border: #334155;
-        --glass-bg: rgba(30, 41, 59, 0.7);
-        --glass-border: rgba(99, 102, 241, 0.2);
+        --border: rgba(148, 163, 184, 0.1);
+        --glass-bg: rgba(15, 23, 42, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.05);
     }
 
     /* Global Styles */
     .stApp {
         font-family: 'Inter', sans-serif;
-    }
-
-    /* RTL Support */
-    [data-lang="AR"] {
-        direction: rtl;
-        text-align: right;
-    }
-
-    .stTextInput > div > div > input,
-    .stTextArea textarea {
-        text-align: right;
-        border-radius: 12px !important;
-        border: 1px solid var(--border) !important;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .stTextInput > div > div > input:focus,
-    .stTextArea textarea:focus {
-        border-color: var(--primary) !important;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+        background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
     }
 
     /* Glassmorphism Cards */
     .glass-card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: var(--bg-card);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border: 1px solid var(--glass-border);
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 24px;
-        margin: 12px 0;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        margin: 16px 0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     .glass-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+        transform: translateY(-4px);
+        background: var(--bg-card-hover);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
     /* Logo Header */
     .logo-container {
-        background: linear-gradient(135deg, var(--primary-dark), var(--accent));
-        padding: 28px;
-        border-radius: 20px;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent) 100%);
+        padding: 32px;
+        border-radius: 24px;
         text-align: center;
-        margin-bottom: 24px;
-        box-shadow: 0 4px 24px rgba(99, 102, 241, 0.3);
+        margin-bottom: 30px;
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .logo-container::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
     }
 
     .logo-container h1 {
         color: white !important;
-        font-weight: 700;
-        font-size: 2rem;
+        font-weight: 800;
+        font-size: 2.4rem;
         margin: 0;
-        letter-spacing: -0.5px;
+        letter-spacing: -1px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    .logo-container p {
-        color: rgba(255,255,255,0.75);
-        font-size: 0.95rem;
-        margin-top: 4px;
+    /* Buttons */
+    .stButton > button {
+        border-radius: 14px !important;
+        font-weight: 600 !important;
+        padding: 10px 24px !important;
+        transition: all 0.2s ease !important;
+        background: var(--primary) !important;
+        border: none !important;
+        color: white !important;
+    }
+
+    .stButton > button:hover {
+        background: var(--primary-dark) !important;
+        transform: scale(1.02) !important;
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4) !important;
     }
 
     /* KPI Metric Cards */
     .kpi-card {
-        background: linear-gradient(135deg, var(--bg-card), var(--bg-card-hover));
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 20px;
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 24px;
         text-align: center;
-        transition: transform 0.2s ease;
-    }
-
-    .kpi-card:hover {
-        transform: translateY(-3px);
+        transition: all 0.3s ease;
     }
 
     .kpi-value {
-        font-size: 2.2rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, var(--primary-light), var(--accent));
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #818cf8, #0ea5e9);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        margin: 10px 0;
     }
 
     .kpi-label {

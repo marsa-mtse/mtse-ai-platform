@@ -82,6 +82,35 @@ def render():
     st.markdown("")
 
     # ==============================
+    # AI MARKETING ASSISTANT
+    # ==============================
+    st.markdown(f"""
+    <div class="glass-card animate-in" style="border-top: 4px solid var(--accent); background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(30, 41, 59, 0.7));">
+        <h3 style="margin-top:0;">🤖 {t("المساعد التسويقي الذكي", "AI Marketing Assistant")}</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    df = st.session_state.get("analysis_df")
+    if df is not None:
+        numeric_summary = df.describe().loc[['mean', 'max']].T
+        top_metric = numeric_summary['mean'].idxmax() if not numeric_summary.empty else "N/A"
+        
+        st.markdown(f"""
+        <div style="padding:10px 20px; color:#cbd5e1; line-height:1.6;">
+            💡 <strong>{t("تحليل سريع:", "AI Insight:")}</strong> 
+            {t(f"بناءً على ملف البيانات المرفوع، نلاحظ أن '{top_metric}' هو المحرك الأساسي للأداء حالياً. ننصح بالتركيز على تحسين استهداف الجمهور المشابه لهذه النتائج.", 
+               f"Based on your uploaded data, '{top_metric}' is currently the primary driver of performance. We recommend doubling down on audience segments similar to these successful results.")}
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.info(t(
+            "قم برفع ملف بيانات في صفحة التحليلات للحصول على توصيات تسويقية ذكية مخصصة لك.",
+            "Upload a dataset in the Analytics page to receive personalized AI marketing recommendations."
+        ))
+
+    st.markdown("")
+
+    # ==============================
     # USAGE PROGRESS BARS
     # ==============================
 

@@ -40,6 +40,9 @@ def render():
         if not plan_manager.can_access_ai_generator():
             st.warning(t("هذه الميزة متاحة للمشتركين في خطة Pro فأعلى.", "This feature requires Pro plan or higher."))
         else:
+            from ai_engine.campaign_generator import get_social_preview_css, render_preview_html
+            st.markdown(get_social_preview_css(), unsafe_allow_html=True)
+            
             with st.form("campaign_generator_form"):
                 col1, col2 = st.columns(2)
                 with col1:
@@ -56,14 +59,18 @@ def render():
                     st.success(t("تم توليد الحملات بنجاح!", "Campaigns generated successfully!"))
                     
                     for i, var in enumerate(variations):
-                        st.markdown(f"""
-                        <div class="glass-card" style="border-left:4px solid #6366f1;">
-                            <h4 style="margin-top:0; color:#818cf8;">Variation #{i+1}</h4>
-                            <p><strong>{t("العنوان:", "Headline:")}</strong> {var['headline']}</p>
-                            <p><strong>{t("النص:", "Body:")}</strong> {var['primary_text']}</p>
-                            <p><strong>{t("إجراء:", "CTA:")}</strong> {var['cta']}</p>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        col_text, col_prev = st.columns([3, 2])
+                        with col_text:
+                            st.markdown(f"""
+                            <div class="glass-card" style="border-left:4px solid #6366f1; height: 100%;">
+                                <h4 style="margin-top:0; color:#818cf8;">Variation #{i+1}</h4>
+                                <p><strong>{t("العنوان:", "Headline:")}</strong> {var['headline']}</p>
+                                <p><strong>{t("النص:", "Body:")}</strong> {var['primary_text']}</p>
+                                <p><strong>{t("إجراء:", "CTA:")}</strong> {var['cta']}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        with col_prev:
+                            st.markdown(render_preview_html(var, username=product_name if product_name else "MTSE"), unsafe_allow_html=True)
                 elif submitted:
                     st.error(t("يرجى إدخال اسم المنتج والجمهور", "Please enter product name and audience"))
 
@@ -71,7 +78,7 @@ def render():
     # 🔥 VIRAL ANALYZER
     # ==============================
     with tab2:
-        render_section_header(t("مقياس الانتشار الفيروسي", "Virality Analyzer"), "🔥")
+        render_section_header(t("مقياس الانتشار الفيروسي وتطوير المحتوى", "Virality Analyzer & Rewriter"), "🔥")
         
         if not plan_manager.can_access_viral_analyzer():
             st.warning(t("هذه الميزة الحصرية متاحة في خطة Business فقط.", "This exclusive feature is for Business plan only."))
@@ -79,12 +86,16 @@ def render():
             content_text = st.text_area(t("ألصق محتوى المنشور هنا", "Paste your post content here"), height=150)
             has_media = st.checkbox(t("يحتوي المنشور على صورة أو فيديو", "Post includes Image/Video"))
             
-            if st.button(t("تحليل الانتشار", "Analyze Virality"), use_container_width=True):
+            c1, c2 = st.columns(2)
+            with c1:
+                analyze_btn = st.button(t("تحليل الانتشار", "Analyze Virality"), use_container_width=True)
+            with c2:
+                rewrite_btn = st.button(t("✨ تحسين المحتوى ذكياً", "✨ AI Rewrite for Virality"), use_container_width=True)
+            
+            if analyze_btn:
                 if content_text:
                     result = analyze_virality(content_text, has_media)
                     score = result["score"]
-                    
-                    # Display score circular logic
                     color = "#10b981" if score >= 80 else "#f59e0b" if score >= 40 else "#ef4444"
                     
                     st.markdown(f"""
@@ -102,6 +113,23 @@ def render():
                         st.balloons()
                 else:
                     st.error(t("أدخل النص لتحليله", "Enter text to analyze"))
+            
+            if rewrite_btn:
+                if content_text:
+                    from ai_engine.viral_analyzer import rewrite_for_virality
+                    rewritten = rewrite_for_virality(content_text)
+                    st.success(t("تم تحسين المحتوى لتعظيم الانتشار! 🔥", "Content optimized for maximum virality! 🔥"))
+                    
+                    for i, rev in enumerate(rewritten):
+                        st.markdown(f"""
+                        <div class="glass-card" style="border-right:4px solid #10b981;">
+                            <h4 style="margin-top:0; color:#10b981;">Suggested AI Version {i+1}</h4>
+                            <p style="font-style: italic; color: #cbd5e1;">"{rev}"</p>
+                            <button style="background:transparent; border:1px solid #10b981; color:#10b981; padding:4px 8px; border-radius:8px; cursor:pointer;" onclick="navigator.clipboard.writeText('{rev}')">📋 Copy to Clipboard</button>
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.error(t("أدخل النص لتحسينه", "Enter text to rewrite"))
 
     # ==============================
     # 📈 TREND PREDICTOR
