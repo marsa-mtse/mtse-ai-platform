@@ -20,9 +20,26 @@ def render():
     st.markdown(f"""
     <div class="glass-card animate-in" style="text-align:center;">
         <h2>🤖 {t("محركات الذكاء الاصطناعي", "AI Engines")}</h2>
-        <p style="color:#94a3b8;">{t("أدوات متقدمة لتوليد الحملات وتحليل الانتشار الفيروسي", "Advanced tools for campaigns and virality")}</p>
+        <p style="color:#94a3b8; font-size:1.1rem;">{t("استخدم قوة الذكاء الاصطناعي لتوسيع نطاق أعمالك عالمياً.", "Harness AI to scale your business globally.")}</p>
     </div>
     """, unsafe_allow_html=True)
+
+    # --- AI STATUS CHECKER ---
+    with st.expander(t("🔍 فحص حالة الاتصال بالذكاء الاصطناعي", "🔍 Check AI Connection Status")):
+        if st.button(t("تشغيل الفحص الآن", "Run Diagnostic Now"), use_container_width=True):
+            google_key = st.secrets.get("GOOGLE_API_KEY")
+            if not google_key:
+                st.error(t("❌ مفتاح Google API غير موجود في الإعدادات (Secrets).", "❌ Google API Key not found in Secrets."))
+            else:
+                try:
+                    import google.generativeai as genai
+                    genai.configure(api_key=google_key)
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content("Ping")
+                    st.success(t("✅ الاتصال بـ Google Gemini يعمل بنجاح!", "✅ Google Gemini connection is active!"))
+                except Exception as e:
+                    st.error(f"❌ Connection Error: {e}")
+    # --------------------------
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         t("📝 مولد الحملات", "📝 Campaign Gen"),
