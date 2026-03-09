@@ -67,21 +67,25 @@ def render():
         st.markdown("### 📄 " + t("استخراج التقرير الرسمي", "Export Official Report"))
         pdf_lang = st.radio(t("لغة التقرير", "Report Language"), [t("العربية", "Arabic"), t("English", "English"), t("اللغتين معاً", "Both Languages")], horizontal=True)
         
-        # We only generate the PDF when the user clicks download
-        # Streamlit download_button 'data' can be a function that returns bytes
-        
-        def pdf_downloader():
-            report_data = generate_strategic_insights(res, lang=pdf_lang)
-            return generate_branded_pdf(report_data, lang=pdf_lang)
+        if st.button(t("تجهيز التقرير للتحميل 🛠️", "Prepare Report for Download 🛠️"), use_container_width=True):
+            with st.spinner(t("جاري بناء التقرير...", "Building report...")):
+                report_data = generate_strategic_insights(res, lang=pdf_lang)
+                pdf_bytes = generate_branded_pdf(report_data, lang=pdf_lang)
+                if pdf_bytes:
+                    st.session_state.pdf_report_bytes = pdf_bytes
+                    st.success(t("✅ التقرير جاهز الآن!", "✅ Report is ready!"))
+                else:
+                    st.error(t("❌ فشل في إنشاء التقرير. تأكد من تثبيت fpdf2.", "❌ Failed to create PDF. Ensure fpdf2 is installed."))
 
-        st.download_button(
-            label=t("تحميل التقرير PDF ببيانات المنصة 📥", "Download PDF Branded Report 📥"),
-            data=pdf_downloader(),
-            file_name="MTSE_Strategic_Report.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            key="pdf_download_btn"
-        )
+        if st.session_state.get("pdf_report_bytes"):
+            st.download_button(
+                label=t("تحميل التقرير PDF ببيانات المنصة 📥", "Download PDF Branded Report 📥"),
+                data=st.session_state.pdf_report_bytes,
+                file_name="MTSE_Strategic_Report.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key="pdf_download_final"
+            )
     
     st.markdown("---")
 
