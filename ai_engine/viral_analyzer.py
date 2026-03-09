@@ -88,23 +88,28 @@ def rewrite_for_virality(content_text, tone="Viral"):
     google_key = st.secrets.get("GOOGLE_API_KEY")
     if google_key and genai:
         try:
-            genai.configure(api_key=google_key)
-            model_name = 'gemini-1.5-flash'
-            try:
-                model = genai.GenerativeModel(model_name)
-                prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
-                response = model.generate_content(prompt)
-            except Exception:
-                model_name = 'gemini-pro'
-                model = genai.GenerativeModel(model_name)
-                prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
-                response = model.generate_content(prompt)
+            genai.configure(api_key=google_key.strip())
+            success_model = None
+            response = None
+            for model_name in ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']:
+                try:
+                    model = genai.GenerativeModel(model_name)
+                    prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
+                    response = model.generate_content(prompt)
+                    if response.text:
+                        success_model = model_name
+                        break
+                except Exception:
+                    continue
+
+            if not response:
+                raise Exception("Could not connect to any Gemini model")
 
             choices = response.text.split("\n")
             variations = [c.strip() for c in choices if len(c.strip()) > 15]
             if variations: return variations[:3]
         except Exception as e:
-            st.warning(f"Gemini AI ({model_name}) Error: {e}")
+            st.warning(f"Gemini AI Error: {e}")
 
     # 2. OpenAI
     api_key = st.secrets.get("OPENAI_API_KEY")

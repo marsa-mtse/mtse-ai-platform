@@ -20,22 +20,26 @@ def generate_campaign_ideas(product_name, target_audience, platform="Meta (Faceb
     google_key = st.secrets.get("GOOGLE_API_KEY")
     if google_key and genai:
         try:
-            genai.configure(api_key=google_key)
-            # Try Flash first, then Pro as fallback
-            model_name = 'gemini-1.5-flash'
-            try:
-                model = genai.GenerativeModel(model_name)
-                prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
-                response = model.generate_content(prompt)
-            except Exception:
-                model_name = 'gemini-pro' # Legacy fallback
-                model = genai.GenerativeModel(model_name)
-                prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
-                response = model.generate_content(prompt)
+            genai.configure(api_key=google_key.strip())
+            # Prioritize Gemini 2.0/2.5 Flash for best speed and quality
+            success_model = None
+            response = None
+            for model_name in ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']:
+                try:
+                    model = genai.GenerativeModel(model_name)
+                    prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
+                    response = model.generate_content(prompt)
+                    if response.text:
+                        success_model = model_name
+                        break
+                except Exception:
+                    continue
+
+            if not response:
+                raise Exception("Could not connect to any Gemini model")
 
             # Simple cleanup for JSON extraction
             txt = response.text.replace("```json", "").replace("```", "").strip()
-            # Find first { and last } to be safe
             start = txt.find("{")
             end = txt.rfind("}")
             if start != -1 and end != -1:
@@ -45,8 +49,8 @@ def generate_campaign_ideas(product_name, target_audience, platform="Meta (Faceb
             variations = data.get("variations", data.get("ads", []))
             if variations: return variations
         except Exception as e:
-            st.warning(f"Gemini API ({model_name}) Error: {e}. Trying next option...")
-
+            st.warning(f"Gemini API Error: {e}. Trying next option...")
+ burial
     # 2. Try OpenAI
     api_key = st.secrets.get("OPENAI_API_KEY")
     if api_key and openai:
