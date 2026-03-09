@@ -33,25 +33,41 @@ def render():
             else:
                 try:
                     import google.generativeai as genai
-                    genai.configure(api_key=google_key)
+                    # Auto-clean whitespace from key if it was copy-pasted with spaces
+                    genai.configure(api_key=google_key.strip())
                     
-                    # Try a few common model names
+                    # 1. List available models for this specific key
+                    available_models = []
+                    try:
+                        for m in genai.list_models():
+                            if 'generateContent' in m.supported_generation_methods:
+                                available_models.append(m.name.replace('models/', ''))
+                    except Exception as le:
+                        st.error(f"❌ Error listing models: {le}")
+                    
+                    if available_models:
+                        st.info(t(f"📊 النماذج المتاحة لمفتاحك: {', '.join(available_models[:5])}", f"📊 Available models for your key: {', '.join(available_models[:5])}"))
+                    
+                    # 2. Try the connection
                     success_model = None
-                    for model_name in ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']:
+                    last_error = "Unknown"
+                    test_models = available_models if available_models else ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+                    
+                    for model_name in test_models:
                         try:
-                            # Use gemini-1.5-flash-latest or models/ prefix if needed
                             model = genai.GenerativeModel(model_name)
                             response = model.generate_content("Ping")
                             if response.text:
                                 success_model = model_name
                                 break
-                        except Exception:
+                        except Exception as me:
+                            last_error = str(me)
                             continue
                     
                     if success_model:
                         st.success(t(f"✅ الاتصال يعمل بنجاح باستخدام نموذج: {success_model}", f"✅ Connection active using model: {success_model}"))
                     else:
-                        st.error(t("❌ فشل الاتصال بكافة النماذج المتاحة. تأكد من أن مفتاحك لديه صلاحيات لـ Flash أو Pro.", "❌ Connection failed for all tried models. Ensure your key has access to Flash or Pro."))
+                        st.error(t(f"❌ فشل الاتصال. آخر خطأ: {last_error}", f"❌ Connection failed. Last error: {last_error}"))
                 except Exception as e:
                     st.error(f"❌ Connection Error: {e}")
     # --------------------------
