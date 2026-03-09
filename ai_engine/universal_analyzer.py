@@ -61,7 +61,7 @@ def generate_strategic_insights(analysis_data, lang="Both"):
     """
     Refines the analysis data into a formal report structure.
     """
-    # This prepares the data for the PDF generator
+    # This prepares the data for the structure
     report = {
         "title": "Universal Strategic Analysis / تحليل استراتيجي شامل",
         "sections": [
