@@ -89,14 +89,22 @@ def rewrite_for_virality(content_text, tone="Viral"):
     if google_key and genai:
         try:
             genai.configure(api_key=google_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
-            response = model.generate_content(prompt)
+            model_name = 'gemini-1.5-flash'
+            try:
+                model = genai.GenerativeModel(model_name)
+                prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
+                response = model.generate_content(prompt)
+            except Exception:
+                model_name = 'gemini-pro'
+                model = genai.GenerativeModel(model_name)
+                prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
+                response = model.generate_content(prompt)
+
             choices = response.text.split("\n")
             variations = [c.strip() for c in choices if len(c.strip()) > 15]
             if variations: return variations[:3]
         except Exception as e:
-            st.warning(f"Gemini AI Error: {e}")
+            st.warning(f"Gemini AI ({model_name}) Error: {e}")
 
     # 2. OpenAI
     api_key = st.secrets.get("OPENAI_API_KEY")

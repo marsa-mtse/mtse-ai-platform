@@ -21,16 +21,31 @@ def generate_campaign_ideas(product_name, target_audience, platform="Meta (Faceb
     if google_key and genai:
         try:
             genai.configure(api_key=google_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
-            response = model.generate_content(prompt)
+            # Try Flash first, then Pro as fallback
+            model_name = 'gemini-1.5-flash'
+            try:
+                model = genai.GenerativeModel(model_name)
+                prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
+                response = model.generate_content(prompt)
+            except Exception:
+                model_name = 'gemini-pro' # Legacy fallback
+                model = genai.GenerativeModel(model_name)
+                prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
+                response = model.generate_content(prompt)
+
             # Simple cleanup for JSON extraction
             txt = response.text.replace("```json", "").replace("```", "").strip()
+            # Find first { and last } to be safe
+            start = txt.find("{")
+            end = txt.rfind("}")
+            if start != -1 and end != -1:
+                txt = txt[start:end+1]
+            
             data = json.loads(txt)
             variations = data.get("variations", data.get("ads", []))
             if variations: return variations
         except Exception as e:
-            st.warning(f"Gemini API Error: {e}. Trying next option...")
+            st.warning(f"Gemini API ({model_name}) Error: {e}. Trying next option...")
 
     # 2. Try OpenAI
     api_key = st.secrets.get("OPENAI_API_KEY")

@@ -34,9 +34,24 @@ def render():
                 try:
                     import google.generativeai as genai
                     genai.configure(api_key=google_key)
-                    model = genai.GenerativeModel('gemini-1.5-flash')
-                    response = model.generate_content("Ping")
-                    st.success(t("✅ الاتصال بـ Google Gemini يعمل بنجاح!", "✅ Google Gemini connection is active!"))
+                    
+                    # Try a few common model names
+                    success_model = None
+                    for model_name in ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']:
+                        try:
+                            # Use gemini-1.5-flash-latest or models/ prefix if needed
+                            model = genai.GenerativeModel(model_name)
+                            response = model.generate_content("Ping")
+                            if response.text:
+                                success_model = model_name
+                                break
+                        except Exception:
+                            continue
+                    
+                    if success_model:
+                        st.success(t(f"✅ الاتصال يعمل بنجاح باستخدام نموذج: {success_model}", f"✅ Connection active using model: {success_model}"))
+                    else:
+                        st.error(t("❌ فشل الاتصال بكافة النماذج المتاحة. تأكد من أن مفتاحك لديه صلاحيات لـ Flash أو Pro.", "❌ Connection failed for all tried models. Ensure your key has access to Flash or Pro."))
                 except Exception as e:
                     st.error(f"❌ Connection Error: {e}")
     # --------------------------
