@@ -38,11 +38,21 @@ def get_gemini_model():
 def analyze_universal_link(url, depth="Deep"):
     """
     Analyzes any URL using Gemini's multimodal/web capabilities.
-    Returns a structured analysis object.
+    Retries across different models if quota or availability issues occur.
     """
-    model = get_gemini_model()
-    if not model:
+    google_key = st.secrets.get("GOOGLE_API_KEY")
+    if not google_key or not genai:
         return {"error": "AI Engine not configured."}
+    
+    genai.configure(api_key=google_key.strip())
+    
+    model_candidates = [
+        'gemini-1.5-flash-latest', 
+        'gemini-1.5-flash', 
+        'gemini-2.0-flash',
+        'gemini-1.5-pro-latest',
+        'gemini-pro'
+    ]
 
     prompt = f"""
     Perform a {depth} marketing and strategic analysis of this URL: {url}
@@ -59,18 +69,29 @@ def analyze_universal_link(url, depth="Deep"):
     Language: Support both Arabic and English if possible.
     """
 
-    try:
-        response = model.generate_content(prompt)
-        txt = response.text.replace("```json", "").replace("```", "").strip()
-        # JSON extraction cleanup
-        start = txt.find("{")
-        end = txt.rfind("}")
-        if start != -1 and end != -1:
-            txt = txt[start:end+1]
-        
-        return json.loads(txt)
-    except Exception as e:
-        return {"error": str(e)}
+    last_error = "Unknown error"
+    for model_name in model_candidates:
+        try:
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(prompt)
+            txt = response.text.replace("```json", "").replace("```", "").strip()
+            
+            # JSON extraction cleanup
+            start = txt.find("{")
+            end = txt.rfind("}")
+            if start != -1 and end != -1:
+                txt = txt[start:end+1]
+            
+            return json.loads(txt)
+        except Exception as e:
+            last_error = str(e)
+            # If it's a quota or model not found error, try the next model
+            if "429" in last_error or "404" in last_error or "Quota" in last_error:
+                continue
+            else:
+                break # Break for other types of errors to avoid infinite loops
+                
+    return {"error": f"Failed after trying multiple models. Last error: {last_error}"}
 
 def generate_strategic_insights(analysis_data, lang="Both"):
     """
