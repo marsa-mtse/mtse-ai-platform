@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from utils import t, render_section_header, render_kpi_card, render_empty_state
+from utils import t, render_section_header, render_kpi_card, render_empty_state, generate_branded_pdf
 from integrations.tiktok_api import TikTokAdsAPI
 from integrations.instagram_api import InstagramGraphAPI
 from integrations.youtube_api import YouTubeAnalyticsAPI
@@ -60,6 +60,30 @@ def render():
             with rc2:
                 st.success(f"**{t('تحليل SWOT:', 'SWOT Analysis:')}**\n\n{res.get('swot')}")
                 st.write(f"**{t('التوصيات:', 'Recommendations:')}**\n\n{res.get('recommendations')}")
+
+        # --- PDF GENERATION ---
+        st.markdown("### 📄 " + t("استخراج التقرير الرسمي", "Export Official Report"))
+        pdf_lang = st.radio(t("لغة التقرير", "Report Language"), [t("العربية", "Arabic"), t("English", "English"), t("اللغتين معاً", "Both Languages")], horizontal=True)
+        
+        if st.button(t("تجهيز التقرير للتحميل 🛠️", "Prepare Report for Download 🛠️"), use_container_width=True):
+            with st.spinner(t("جاري بناء التقرير...", "Building report...")):
+                report_data = generate_strategic_insights(res, lang=pdf_lang)
+                pdf_bytes = generate_branded_pdf(report_data, lang=pdf_lang)
+                if pdf_bytes:
+                    st.session_state.pdf_report_bytes = pdf_bytes
+                    st.success(t("✅ التقرير جاهز الآن!", "✅ Report is ready!"))
+                else:
+                    st.error(t("❌ فشل في إنشاء التقرير. تأكد من توفر المكتبات اللازمة.", "❌ Failed to create PDF. Check dependencies."))
+
+        if st.session_state.get("pdf_report_bytes"):
+            st.download_button(
+                label=t("تحميل التقرير PDF ببيانات المنصة 📥", "Download PDF Branded Report 📥"),
+                data=st.session_state.pdf_report_bytes,
+                file_name="MTSE_Strategic_Report.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key="pdf_download_incremental"
+            )
     
     st.markdown("---")
 

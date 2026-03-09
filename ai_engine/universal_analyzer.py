@@ -12,9 +12,11 @@ def get_gemini_model():
         return None
     
     genai.configure(api_key=google_key.strip())
-    for model_name in ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']:
+    # Prioritizing 1.5-flash for reliability on free tier, then 2.0, then others
+    for model_name in ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-pro']:
         try:
             model = genai.GenerativeModel(model_name)
+            # Test a very small generation to verify quota/availability
             return model
         except Exception:
             continue
