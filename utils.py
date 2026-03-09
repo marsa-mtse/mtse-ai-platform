@@ -1,16 +1,7 @@
 # ==========================================================
 # MTSE Marketing Engine - Utility Functions
 # ==========================================================
-
 import streamlit as st
-
-try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    ARABIC_SUPPORT = True
-except ImportError:
-    ARABIC_SUPPORT = False
-
 
 # ==============================
 # TRANSLATION HELPER
