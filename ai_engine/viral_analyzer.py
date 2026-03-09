@@ -1,5 +1,5 @@
 # ==========================================================
-# MTSE Marketing Engine - AI Campaign Generator
+# MTSE Marketing Engine - Viral Analyzer
 # ==========================================================
 
 import random
@@ -9,6 +9,11 @@ try:
     import openai
 except ImportError:
     openai = None
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 from utils import t, format_arabic
 
@@ -74,34 +79,42 @@ def analyze_virality(content_text, has_media=False, target_audience="General"):
         "is_viral_candidate": score >= 80
     }
 
-import random
-import streamlit as st
-try:
-    import openai
-except ImportError:
-    openai = None
 
 def rewrite_for_virality(content_text, tone="Viral"):
     """
-    Simulates AI rewriting or uses OpenAI if available.
+    Rewrites content for virality using Gemini, OpenAI, or simulation.
     """
+    # 1. Google Gemini (Free Tier)
+    google_key = st.secrets.get("GOOGLE_API_KEY")
+    if google_key and genai:
+        try:
+            genai.configure(api_key=google_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
+            response = model.generate_content(prompt)
+            choices = response.text.split("\n")
+            variations = [c.strip() for c in choices if len(c.strip()) > 15]
+            if variations: return variations[:3]
+        except Exception as e:
+            st.warning(f"Gemini AI Error: {e}")
+
+    # 2. OpenAI
     api_key = st.secrets.get("OPENAI_API_KEY")
     if api_key and openai:
         try:
             client = openai.OpenAI(api_key=api_key)
-            prompt = f"Rewrite the following marketing content to be extremely viral and engaging for social media. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic."
+            prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic."
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}]
             )
             choices = response.choices[0].message.content.split("\n")
-            variations = [c.strip() for c in choices if len(c.strip()) > 20]
-            if len(variations) > 0:
-                return variations[:3]
+            variations = [c.strip() for c in choices if len(c.strip()) > 15]
+            if variations: return variations[:3]
         except Exception as e:
-            st.error(f"AI API Error: {e}")
+            st.error(f"OpenAI AI Error: {e}")
 
-    # Fallback simulation
+    # 3. Fallback Simulation
     prefixes = [
         "🔥 السر اللي الكل بيدور عليه: ",
         "🚀 أخيراً، الحل النهائي لـ: ",

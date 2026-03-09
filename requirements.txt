@@ -14,4 +14,5 @@ openpyxl>=3.1.0
 
 # AI and Payments
 openai>=1.0.0
+google-generativeai>=0.3.0
 stripe>=7.0.0

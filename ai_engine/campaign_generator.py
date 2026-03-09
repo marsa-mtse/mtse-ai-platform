@@ -1,7 +1,3 @@
-# ==========================================================
-# MTSE Marketing Engine - AI Campaign Generator
-# ==========================================================
-
 import random
 import streamlit as st
 import json
@@ -10,36 +6,50 @@ try:
 except ImportError:
     openai = None
 
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+
 def generate_campaign_ideas(product_name, target_audience, platform="Meta (Facebook/Instagram)"):
     """
-    Generate ad copy ideas. Uses OpenAI if API key is provided, otherwise falls back to simulation.
+    Generate ad copy ideas. Support for Google Gemini (Free Tier) and OpenAI.
     """
     
+    # 1. Try Google Gemini (Most recommended for free tier)
+    google_key = st.secrets.get("GOOGLE_API_KEY")
+    if google_key and genai:
+        try:
+            genai.configure(api_key=google_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
+            response = model.generate_content(prompt)
+            # Simple cleanup for JSON extraction
+            txt = response.text.replace("```json", "").replace("```", "").strip()
+            data = json.loads(txt)
+            variations = data.get("variations", data.get("ads", []))
+            if variations: return variations
+        except Exception as e:
+            st.warning(f"Gemini API Error: {e}. Trying next option...")
+
+    # 2. Try OpenAI
     api_key = st.secrets.get("OPENAI_API_KEY")
     if api_key and openai:
         try:
             client = openai.OpenAI(api_key=api_key)
-            prompt = f"""
-            Generate 3 creative ad copy variations for a product named '{product_name}' targeting '{target_audience}' for the platform '{platform}'.
-            Each variation must have a 'headline', 'primary_text', and 'cta'.
-            The language should be Arabic (Modern Standard or Professional Egyptian as appropriate).
-            Return the result as a list of 3 JSON objects.
-            """
+            prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={ "type": "json_object" }
             )
-            import json
             data = json.loads(response.choices[0].message.content)
-            # Standardize keys if AI returns different casing
             variations = data.get("variations", data.get("ads", []))
-            if variations:
-                return variations
+            if variations: return variations
         except Exception as e:
-            st.error(f"AI API Error: {e}. Falling back to simulation.")
+            st.error(f"OpenAI API Error: {e}")
 
-    # FALLBACK SIMULATION ENGINE
+    # 3. Fallback Simulation Engine
     platforms_styles = {
         "Meta (Facebook/Instagram)": {
             "hooks": [
