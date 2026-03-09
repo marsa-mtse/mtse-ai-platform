@@ -4,14 +4,26 @@
 
 import streamlit as st
 
-try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    ARABIC_SUPPORT = True
-except ImportError:
-    ARABIC_SUPPORT = False
+# Safely import heavy libraries
+def get_pdf_engine():
+    try:
+        from fpdf import FPDF
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+        return FPDF, arabic_reshaper, get_display
+    except ImportError:
+        return None, None, None
 
-# FPDF is imported inside the function to prevent startup crashes if missing
+def format_arabic(text):
+    """Reshape Arabic text for PDF rendering."""
+    _, reshaper, bidi = get_pdf_engine()
+    if not reshaper or not bidi:
+        return text
+    try:
+        reshaped = reshaper.reshape(text)
+        return bidi(reshaped)
+    except Exception:
+        return text
 
 
 # ==============================
@@ -149,11 +161,13 @@ def validate_email(email):
 def generate_branded_pdf(report_data, lang="Both"):
     """
     Generates a professional PDF with branding and Arabic support.
-    Returns bytes or None if failed.
     """
+    FPDF, _, _ = get_pdf_engine()
+    if not FPDF:
+        st.error("PDF Engine (fpdf2) is not installed.")
+        return None
+
     try:
-        from fpdf import FPDF
-        
         class BrandedPDF(FPDF):
             def header(self):
                 try:
@@ -175,14 +189,12 @@ def generate_branded_pdf(report_data, lang="Both"):
         pdf = BrandedPDF()
         pdf.add_page()
         
-        # Title
         pdf.set_font('Helvetica', 'B', 18)
         pdf.set_text_color(26, 115, 232)
         title = format_arabic(report_data.get("title", "Strategic Report"))
         pdf.cell(0, 12, title, 0, 1, 'C')
         pdf.ln(8)
 
-        # Content
         for section in report_data.get("sections", []):
             pdf.set_font('Helvetica', 'B', 12)
             pdf.set_text_color(33, 33, 33)
@@ -197,5 +209,5 @@ def generate_branded_pdf(report_data, lang="Both"):
 
         return pdf.output()
     except Exception as e:
-        st.error(f"PDF Error: {e}")
+        st.error(f"Error generating PDF: {e}")
         return None
