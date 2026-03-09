@@ -148,59 +148,56 @@ def validate_email(email):
 
 class BrandedPDF(FPDF):
     def header(self):
-        # Add Logo
+        # Add Logo from the assets folder
         try:
-            # We assume logo is available or we use a fallback text
-            self.image('logo_premium.png', 10, 8, 33)
+            self.image('assets/logo_premium.png', 10, 8, 30)
         except Exception:
             self.set_font('Arial', 'B', 15)
             self.cell(80)
-            self.cell(30, 10, 'MTSE AI Platform', 0, 0, 'C')
+            self.cell(30, 10, 'MTSE AI Platform', 0, 0, 'L')
         
         self.ln(20)
-        # Line break
-        self.set_draw_color(0, 80, 180)
-        self.line(10, 30, 200, 30)
+        # Deep blue line
+        self.set_draw_color(26, 115, 232)
+        self.line(10, 32, 200, 32)
         self.ln(10)
 
     def footer(self):
         # Position at 1.5 cm from bottom
         self.set_y(-15)
         self.set_font('Arial', 'I', 8)
-        self.set_text_color(128)
-        # Page number
-        self.cell(0, 10, f'Page {self.page_no()} | MTSE AI Global Platform | Contact: support@mtse-ai.com', 0, 0, 'C')
+        self.set_text_color(150)
+        # Footer text
+        self.cell(0, 10, f'Page {self.page_no()} | MTSE Digital Marketing Engine | info@mtse.com', 0, 0, 'C')
 
 def generate_branded_pdf(report_data, lang="Both"):
     """
-    Generates a professional PDF with branding, Arabic support, and dual language.
+    Generates a professional PDF with branding and Arabic support.
     """
     pdf = BrandedPDF()
     pdf.add_page()
     
-    # Registration of fonts (Assuming fonts are in a 'fonts' directory)
-    # To support Arabic, we need a TTF file like Amiri
-    try:
-        # pdf.add_font('Amiri', '', 'fonts/Amiri-Regular.ttf', uni=True)
-        # pdf.set_font('Amiri', '', 12)
-        pdf.set_font('Arial', 'B', 16)
-    except Exception:
-        pdf.set_font('Arial', 'B', 14)
-
     # Title
-    title = format_arabic(report_data.get("title", "Report"))
-    pdf.cell(0, 10, title, 0, 1, 'C')
-    pdf.ln(10)
+    pdf.set_font('Arial', 'B', 18)
+    pdf.set_text_color(26, 115, 232) # Brand Blue
+    title = format_arabic(report_data.get("title", "Strategic Report"))
+    pdf.cell(0, 12, title, 0, 1, 'C')
+    pdf.ln(8)
 
-    # Content Sections
+    # Content
     for section in report_data.get("sections", []):
-        pdf.set_font('Arial', 'B', 12)
+        # Section Heading
+        pdf.set_font('Arial', 'B', 13)
+        pdf.set_text_color(33, 33, 33)
         heading = format_arabic(section.get("heading", ""))
         pdf.cell(0, 10, heading, 0, 1, 'L')
         
+        # Section Content
         pdf.set_font('Arial', '', 11)
+        pdf.set_text_color(66, 66, 66)
         content = format_arabic(section.get("content", ""))
-        pdf.multi_cell(0, 10, content)
-        pdf.ln(5)
+        pdf.multi_cell(0, 8, content)
+        pdf.ln(4)
 
-    return pdf.output(dest='S').encode('latin1')
+    # Output as bytes for st.download_button
+    return pdf.output()

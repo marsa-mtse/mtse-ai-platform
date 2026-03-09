@@ -67,14 +67,17 @@ def render():
         st.markdown("### 📄 " + t("استخراج التقرير الرسمي", "Export Official Report"))
         pdf_lang = st.radio(t("لغة التقرير", "Report Language"), [t("العربية", "Arabic"), t("English", "English"), t("اللغتين معاً", "Both Languages")], horizontal=True)
         
-        if st.button(t("تحميل التقرير PDF ببيانات المنصة 📥", "Download PDF Branded Report 📥"), use_container_width=True):
-            with st.spinner(t("جاري بناء التقرير الاحترافي...", "Building professional report...")):
-                report_data = generate_strategic_insights(res, lang=pdf_lang)
-                pdf_bytes = generate_branded_pdf(report_data, lang=pdf_lang)
-                
-                b64 = base64.b64encode(pdf_bytes).decode('latin1')
-                href = f'<a href="data:application/octet-stream;base64,{b64}" download="MTSE_Strategic_Report.pdf" class="download-btn" style="text-decoration:none; background:#10b981; color:white; padding:10px 20px; border-radius:8px; display:inline-block; margin-top:10px;">{t("📥 اضغط هنا لتحميل التقرير", "📥 Click here to download the report")}</a>'
-                st.markdown(href, unsafe_allow_html=True)
+        # Prepare PDF data
+        report_data = generate_strategic_insights(res, lang=pdf_lang)
+        pdf_bytes = generate_branded_pdf(report_data, lang=pdf_lang)
+        
+        st.download_button(
+            label=t("تحميل التقرير PDF ببيانات المنصة 📥", "Download PDF Branded Report 📥"),
+            data=pdf_bytes,
+            file_name="MTSE_Strategic_Report.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
     
     st.markdown("---")
 
