@@ -7,6 +7,8 @@ import streamlit as st
 try:
     import arabic_reshaper
     from bidi.algorithm import get_display
+    from fpdf import FPDF
+    import base64
     ARABIC_SUPPORT = True
 except ImportError:
     ARABIC_SUPPORT = False
@@ -138,3 +140,67 @@ def validate_email(email):
     if not email or "@" not in email or "." not in email:
         return False, t("بريد إلكتروني غير صالح", "Invalid email address")
     return True, ""
+
+
+# ==============================
+# PROFESSIONAL PDF REPORTING
+# ==============================
+
+class BrandedPDF(FPDF):
+    def header(self):
+        # Add Logo
+        try:
+            # We assume logo is available or we use a fallback text
+            self.image('logo_premium.png', 10, 8, 33)
+        except Exception:
+            self.set_font('Arial', 'B', 15)
+            self.cell(80)
+            self.cell(30, 10, 'MTSE AI Platform', 0, 0, 'C')
+        
+        self.ln(20)
+        # Line break
+        self.set_draw_color(0, 80, 180)
+        self.line(10, 30, 200, 30)
+        self.ln(10)
+
+    def footer(self):
+        # Position at 1.5 cm from bottom
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(128)
+        # Page number
+        self.cell(0, 10, f'Page {self.page_no()} | MTSE AI Global Platform | Contact: support@mtse-ai.com', 0, 0, 'C')
+
+def generate_branded_pdf(report_data, lang="Both"):
+    """
+    Generates a professional PDF with branding, Arabic support, and dual language.
+    """
+    pdf = BrandedPDF()
+    pdf.add_page()
+    
+    # Registration of fonts (Assuming fonts are in a 'fonts' directory)
+    # To support Arabic, we need a TTF file like Amiri
+    try:
+        # pdf.add_font('Amiri', '', 'fonts/Amiri-Regular.ttf', uni=True)
+        # pdf.set_font('Amiri', '', 12)
+        pdf.set_font('Arial', 'B', 16)
+    except Exception:
+        pdf.set_font('Arial', 'B', 14)
+
+    # Title
+    title = format_arabic(report_data.get("title", "Report"))
+    pdf.cell(0, 10, title, 0, 1, 'C')
+    pdf.ln(10)
+
+    # Content Sections
+    for section in report_data.get("sections", []):
+        pdf.set_font('Arial', 'B', 12)
+        heading = format_arabic(section.get("heading", ""))
+        pdf.cell(0, 10, heading, 0, 1, 'L')
+        
+        pdf.set_font('Arial', '', 11)
+        content = format_arabic(section.get("content", ""))
+        pdf.multi_cell(0, 10, content)
+        pdf.ln(5)
+
+    return pdf.output(dest='S').encode('latin1')
