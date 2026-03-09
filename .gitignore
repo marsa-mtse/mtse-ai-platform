@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+mtse_saas.db
+.env
+venv/
+env/
+.DS_Store
