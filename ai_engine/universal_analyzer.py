@@ -12,11 +12,24 @@ def get_gemini_model():
         return None
     
     genai.configure(api_key=google_key.strip())
-    # Prioritizing 1.5-flash for reliability on free tier, then 2.0, then others
-    for model_name in ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-pro']:
+    # Comprehensive list of model identifiers to handle different API versions and quotas
+    # Prioritizing 1.5-flash-latest as it often has better availability than 2.0-flash on free tier
+    model_candidates = [
+        'gemini-1.5-flash-latest', 
+        'gemini-1.5-flash', 
+        'gemini-1.5-flash-001',
+        'gemini-2.0-flash',
+        'gemini-2.0-flash-exp',
+        'gemini-1.5-pro-latest',
+        'gemini-1.5-pro',
+        'gemini-pro'
+    ]
+    
+    for model_name in model_candidates:
         try:
             model = genai.GenerativeModel(model_name)
-            # Test a very small generation to verify quota/availability
+            # We don't verify with a test call here to save quota, 
+            # but we return the first one that doesn't crash on init.
             return model
         except Exception:
             continue
