@@ -50,7 +50,7 @@ def generate_campaign_ideas(product_name, target_audience, platform="Meta (Faceb
             if variations: return variations
         except Exception as e:
             st.warning(f"Gemini API Error: {e}. Trying next option...")
- burial
+
     # 2. Try OpenAI
     api_key = st.secrets.get("OPENAI_API_KEY")
     if api_key and openai:
