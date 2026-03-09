@@ -4,26 +4,12 @@
 
 import streamlit as st
 
-# Safely import heavy libraries
-def get_pdf_engine():
-    try:
-        from fpdf import FPDF
-        import arabic_reshaper
-        from bidi.algorithm import get_display
-        return FPDF, arabic_reshaper, get_display
-    except ImportError:
-        return None, None, None
-
-def format_arabic(text):
-    """Reshape Arabic text for PDF rendering."""
-    _, reshaper, bidi = get_pdf_engine()
-    if not reshaper or not bidi:
-        return text
-    try:
-        reshaped = reshaper.reshape(text)
-        return bidi(reshaped)
-    except Exception:
-        return text
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+    ARABIC_SUPPORT = True
+except ImportError:
+    ARABIC_SUPPORT = False
 
 
 # ==============================
@@ -152,62 +138,3 @@ def validate_email(email):
     if not email or "@" not in email or "." not in email:
         return False, t("بريد إلكتروني غير صالح", "Invalid email address")
     return True, ""
-
-
-# ==============================
-# PROFESSIONAL PDF REPORTING
-# ==============================
-
-def generate_branded_pdf(report_data, lang="Both"):
-    """
-    Generates a professional PDF with branding and Arabic support.
-    """
-    FPDF, _, _ = get_pdf_engine()
-    if not FPDF:
-        st.error("PDF Engine (fpdf2) is not installed.")
-        return None
-
-    try:
-        class BrandedPDF(FPDF):
-            def header(self):
-                try:
-                    self.image('assets/logo_premium.png', 10, 8, 30)
-                except:
-                    self.set_font('Helvetica', 'B', 15)
-                    self.cell(0, 10, 'MTSE AI Platform', 0, 0, 'L')
-                self.ln(20)
-                self.set_draw_color(26, 115, 232)
-                self.line(10, 32, 200, 32)
-                self.ln(10)
-
-            def footer(self):
-                self.set_y(-15)
-                self.set_font('Helvetica', 'I', 8)
-                self.set_text_color(150)
-                self.cell(0, 10, f'Page {self.page_no()} | MTSE Digital Marketing Engine', 0, 0, 'C')
-
-        pdf = BrandedPDF()
-        pdf.add_page()
-        
-        pdf.set_font('Helvetica', 'B', 18)
-        pdf.set_text_color(26, 115, 232)
-        title = format_arabic(report_data.get("title", "Strategic Report"))
-        pdf.cell(0, 12, title, 0, 1, 'C')
-        pdf.ln(8)
-
-        for section in report_data.get("sections", []):
-            pdf.set_font('Helvetica', 'B', 12)
-            pdf.set_text_color(33, 33, 33)
-            heading = format_arabic(section.get("heading", ""))
-            pdf.cell(0, 10, heading, 0, 1, 'L')
-            
-            pdf.set_font('Helvetica', '', 10)
-            pdf.set_text_color(66, 66, 66)
-            content = format_arabic(section.get("content", ""))
-            pdf.multi_cell(0, 7, content)
-            pdf.ln(4)
-
-        return pdf.output()
-    except Exception as e:
-        st.error(f"Error generating PDF: {e}")
-        return None

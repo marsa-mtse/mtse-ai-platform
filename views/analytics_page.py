@@ -6,88 +6,16 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from utils import t, render_section_header, render_kpi_card, render_empty_state, generate_branded_pdf
+from utils import t, render_section_header, render_kpi_card, render_empty_state
 from integrations.tiktok_api import TikTokAdsAPI
 from integrations.instagram_api import InstagramGraphAPI
 from integrations.youtube_api import YouTubeAnalyticsAPI
 from billing.plans import PlanManager
-from ai_engine.universal_analyzer import analyze_universal_link, generate_strategic_insights
-import base64
 
 def render():
     """Render the advanced Analytics page with Integrations."""
     
     plan_manager = PlanManager(st.session_state.plan)
-
-    # ==============================
-    # 🔗 UNIVERSAL LINK ANALYZER
-    # ==============================
-    render_section_header(t("التحليل العالمي العميق", "Universal Deep Analysis"), "🔗")
-    
-    st.markdown(f"""
-    <div class="glass-card animate-in">
-        <p style="color:#94a3b8; font-size:1rem;">
-            {t("أدخل أي رابط (سوشيال ميديا، فيديو، مقال، جدول) لتحليله استراتيجياً واستخراج تقرير احترافي بشعارك.", 
-               "Enter any link (Social, Video, Article, Sheet) for strategic analysis and professional branded reporting.")}
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    uc1, uc2 = st.columns([3, 1])
-    with uc1:
-        target_url = st.text_input(t("رابط المحتوى للتحليل", "Content URL to Analyze"), placeholder="https://youtube.com/... or https://facebook.com/...", key="univ_url")
-    with uc2:
-        analysis_depth = st.selectbox(t("دقة التحليل", "Analysis Depth"), [t("عميق جداً", "Deep Search"), t("قياسي", "Standard")], key="univ_depth")
-
-    if st.button(t("تحليل الرابط واستخراج تقرير استراتيجي 🚀", "Analyze & Generate Strategic Report 🚀"), use_container_width=True):
-        if not target_url:
-            st.error(t("الرجاء إدخال الرابط أولاً.", "Please enter a URL first."))
-        else:
-            with st.spinner(t("جاري تحليل الرابط بعمق عبر Gemini 2.0...", "Performing deep link analysis via Gemini 2.0...")):
-                result = analyze_universal_link(target_url, depth=analysis_depth)
-                if "error" in result:
-                    st.error(f"❌ {result['error']}")
-                else:
-                    st.session_state.universal_analysis = result
-                    st.success(t("✅ تم التحليل بنجاح!", "✅ Analysis completed successfully!"))
-
-    if st.session_state.get("universal_analysis"):
-        res = st.session_state.universal_analysis
-        
-        with st.expander(t("📈 عرض نتائج التحليل الاستراتيجي", "📈 View Strategic Analysis Results"), expanded=True):
-            rc1, rc2 = st.columns(2)
-            with rc1:
-                st.info(f"**{t('الملخص:', 'Summary:')}**\n\n{res.get('summary')}")
-                st.warning(f"**{t('الجمهور المستهدف:', 'Target Audience:')}**\n\n{res.get('audience')}")
-            with rc2:
-                st.success(f"**{t('تحليل SWOT:', 'SWOT Analysis:')}**\n\n{res.get('swot')}")
-                st.write(f"**{t('التوصيات:', 'Recommendations:')}**\n\n{res.get('recommendations')}")
-
-        # --- PDF GENERATION ---
-        st.markdown("### 📄 " + t("استخراج التقرير الرسمي", "Export Official Report"))
-        pdf_lang = st.radio(t("لغة التقرير", "Report Language"), [t("العربية", "Arabic"), t("English", "English"), t("اللغتين معاً", "Both Languages")], horizontal=True)
-        
-        if st.button(t("تجهيز التقرير للتحميل 🛠️", "Prepare Report for Download 🛠️"), use_container_width=True):
-            with st.spinner(t("جاري بناء التقرير...", "Building report...")):
-                report_data = generate_strategic_insights(res, lang=pdf_lang)
-                pdf_bytes = generate_branded_pdf(report_data, lang=pdf_lang)
-                if pdf_bytes:
-                    st.session_state.pdf_report_bytes = pdf_bytes
-                    st.success(t("✅ التقرير جاهز الآن!", "✅ Report is ready!"))
-                else:
-                    st.error(t("❌ فشل في إنشاء التقرير. تأكد من تثبيت fpdf2.", "❌ Failed to create PDF. Ensure fpdf2 is installed."))
-
-        if st.session_state.get("pdf_report_bytes"):
-            st.download_button(
-                label=t("تحميل التقرير PDF ببيانات المنصة 📥", "Download PDF Branded Report 📥"),
-                data=st.session_state.pdf_report_bytes,
-                file_name="MTSE_Strategic_Report.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key="pdf_download_final"
-            )
-    
-    st.markdown("---")
 
     # ==============================
     # 🌍 GLOBAL MARKET TRENDS
