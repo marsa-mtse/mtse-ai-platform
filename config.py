@@ -98,13 +98,20 @@ PREMIUM_CSS = """
     /* Logo Header */
     .logo-container {
         background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent) 100%);
-        padding: 32px;
-        border-radius: 24px;
+        padding: 40px;
+        border-radius: 28px;
         text-align: center;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        margin-bottom: 35px;
+        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
         position: relative;
         overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .logo-img {
+        width: 100px;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
 
     .logo-container::after {

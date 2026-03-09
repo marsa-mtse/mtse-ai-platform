@@ -44,6 +44,14 @@ create_default_admin()
 # Initialize session
 init_session()
 
+# Load Logo Base64
+import base64
+try:
+    with open("mtse_logo.png", "rb") as f:
+        st.session_state.logo_base64 = base64.b64encode(f.read()).decode()
+except:
+    st.session_state.logo_base64 = ""
+
 # ==============================
 # LOGIN SCREEN
 # ==============================
@@ -64,8 +72,9 @@ if not st.session_state.logged_in:
     # Logo
     st.markdown(f"""
     <div class="logo-container">
-        <h1>📊 MTSE Marketing Engine</h1>
-        <p>{t("منصة التسويق الذكية", "Smart Marketing Platform")}</p>
+        <img src="data:image/png;base64,{st.session_state.get('logo_base64', '')}" class="logo-img">
+        <h1>MTSE Marketing Engine</h1>
+        <p>{t("منصة التسويق الذكية العالمية", "Global Smart Marketing Platform")}</p>
     </div>
     """, unsafe_allow_html=True)
 

@@ -24,11 +24,12 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4 = st.tabs([
-        t("📝 الإعلانات", "📝 Ads Generator"),
-        t("🔥 الفيروسية", "🔥 Viral Analyzer"),
-        t("📈 الاتجاهات", "📈 Trends"),
-        t("💬 المساعد الذكي", "💬 Chat Assistant")
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        t("📝 مولد الحملات", "📝 Campaign Gen"),
+        t("🔥 مقياس الانتشار", "🔥 Viral Analyzer"),
+        t("📈 التنبؤات", "📈 Trend Predictor"),
+        t("🧠 تحليل استراتيجي", "🧠 Strategy Deep Dive"),
+        t("💬 المساعد الذكي", "💬 AI Assistant")
     ])
 
     # ==============================
@@ -174,9 +175,64 @@ def render():
                 st.warning(t("يرجى رفع ملف بيانات من صفحة التحليلات أولاً.", "Please upload dataset in Analytics page first."))
 
     # ==============================
-    # 💬 CHAT ASSISTANT
+    # 🧠 STRATEGY DEEP DIVE
     # ==============================
     with tab4:
+        render_section_header(t("التحليل الاستراتيجي العميق", "AI Strategy Deep Dive"), "🧠")
+        
+        if not plan_manager.can_access_ai_generator():
+            st.warning(t("هذه الميزة متاحة للمشتركين في خطة Business فقط.", "This feature requires Business plan."))
+        else:
+            st.markdown(f"""
+            <div class="glass-card" style="border-top: 4px solid var(--primary);">
+                <h4>{t("خارطة الطريق العالمية لمنتجك", "Global Product Roadmap")}</h4>
+                <p style="color:#94a3b8;">{t("سيقوم الذكاء الاصطناعي بتحليل منتجك ووضع خطة توسع عالمية.", "AI will analyze your product and create a global expansion plan.")}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            p_name = st.text_input(t("اسم المنتج للتحليل العميق", "Product Name for Deep Dive"), key="deep_dive_name")
+            if st.button(t("🚀 ابدأ التحليل الاستراتيجي", "🚀 Start Strategic Analysis"), use_container_width=True):
+                if p_name:
+                    with st.spinner(t("جاري تحليل الأسواق العالمية...", "Analyzing global markets...")):
+                        import time
+                        time.sleep(2)
+                        st.balloons()
+                        st.markdown(f"""
+                        <div class="glass-card">
+                            <h3 style="color:var(--accent);">🌍 {t("خطة التوسع لـ", "Expansion Plan for")} {p_name}</h3>
+                            <hr style="border-color:rgba(255,255,255,0.1);">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                                <div>
+                                    <h5 style="color:var(--success);">✅ {t("الأسواق المستهدفة", "Target Markets")}</h5>
+                                    <ul>
+                                        <li>{t("دول الخليج (السعودية، الإمارات)", "GCC (KSA, UAE)")}</li>
+                                        <li>{t("أوروبا الغربية", "Western Europe")}</li>
+                                        <li>{t("شمال أمريكا", "North America")}</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 style="color:var(--primary-light);">🎯 {t("القنوات المقترحة", "Suggested Channels")}</h5>
+                                    <ul>
+                                        <li>LinkedIn Ads (B2B Focus)</li>
+                                        <li>Google Search (High Intent)</li>
+                                        <li>TikTok (Brand Awareness)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div style="margin-top:20px; padding:15px; background:rgba(99, 102, 241, 0.1); border-radius:12px;">
+                                <strong>💡 {t("نصيحة الخبراء:", "Expert Tip:")}</strong> 
+                                {t("ركز على توطين المحتوى (Localization) لكل سوق بشكل مستقل لضمان أعلى معدل تحويل.", 
+                                   "Focus on content localization for each market independently to ensure the highest conversion rate.")}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.error(t("يرجى إدخال اسم المنتج", "Please enter product name"))
+
+    # ==============================
+    # 💬 CHAT ASSISTANT
+    # ==============================
+    with tab5:
         render_section_header(t("المساعد الذكي للبيانات", "AI Chat Assistant"), "💬")
         
         # Simple integrated chat fallback

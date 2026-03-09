@@ -17,6 +17,40 @@ def render():
     
     plan_manager = PlanManager(st.session_state.plan)
 
+    # ==============================
+    # 🌍 GLOBAL MARKET TRENDS
+    # ==============================
+    render_section_header(t("اتجاهات السوق العالمية", "Global Market Trends"), "🌍")
+    
+    # Simulated global data
+    global_data = pd.DataFrame({
+        'Country': ['USA', 'China', 'Germany', 'UK', 'France', 'India', 'Brazil', 'UAE', 'Saudi Arabia', 'Egypt'],
+        'Market Score': [95, 88, 75, 72, 68, 85, 60, 92, 90, 80]
+    })
+    
+    fig_map = px.choropleth(
+        global_data,
+        locations="Country",
+        locationmode="country names",
+        color="Market Score",
+        hover_name="Country",
+        color_continuous_scale=px.colors.sequential.Plasma,
+        title=t("نقاط قوة السوق حسب الدولة", "Market Sentiment Score by Country")
+    )
+    fig_map.update_layout(
+        geo=dict(
+            showframe=False,
+            showcoastlines=False,
+            projection_type='equirectangular',
+            bgcolor='rgba(0,0,0,0)'
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=0, r=0, t=40, b=0)
+    )
+    st.plotly_chart(fig_map, use_container_width=True)
+
+    st.markdown("")
     st.markdown(f"""
     <div class="glass-card animate-in" style="text-align:center;">
         <h2>📊 {t("التحليلات والتكامل", "Analytics & Integrations")}</h2>
