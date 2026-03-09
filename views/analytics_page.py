@@ -67,16 +67,20 @@ def render():
         st.markdown("### 📄 " + t("استخراج التقرير الرسمي", "Export Official Report"))
         pdf_lang = st.radio(t("لغة التقرير", "Report Language"), [t("العربية", "Arabic"), t("English", "English"), t("اللغتين معاً", "Both Languages")], horizontal=True)
         
-        # Prepare PDF data
-        report_data = generate_strategic_insights(res, lang=pdf_lang)
-        pdf_bytes = generate_branded_pdf(report_data, lang=pdf_lang)
+        # We only generate the PDF when the user clicks download
+        # Streamlit download_button 'data' can be a function that returns bytes
         
+        def pdf_downloader():
+            report_data = generate_strategic_insights(res, lang=pdf_lang)
+            return generate_branded_pdf(report_data, lang=pdf_lang)
+
         st.download_button(
             label=t("تحميل التقرير PDF ببيانات المنصة 📥", "Download PDF Branded Report 📥"),
-            data=pdf_bytes,
+            data=pdf_downloader(),
             file_name="MTSE_Strategic_Report.pdf",
             mime="application/pdf",
-            use_container_width=True
+            use_container_width=True,
+            key="pdf_download_btn"
         )
     
     st.markdown("---")

@@ -8,10 +8,10 @@ try:
     import arabic_reshaper
     from bidi.algorithm import get_display
     from fpdf import FPDF
-    import base64
     ARABIC_SUPPORT = True
 except ImportError:
     ARABIC_SUPPORT = False
+    class FPDF: pass # Dummy to avoid NameError
 
 
 # ==============================
