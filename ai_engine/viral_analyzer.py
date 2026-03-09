@@ -1,9 +1,16 @@
 # ==========================================================
-# MTSE Marketing Engine - Viral Analyzer
+# MTSE Marketing Engine - AI Campaign Generator
 # ==========================================================
 
 import random
-from utils import t
+import streamlit as st
+import json
+try:
+    import openai
+except ImportError:
+    openai = None
+
+from utils import t, format_arabic
 
 def analyze_virality(content_text, has_media=False, target_audience="General"):
     """
@@ -67,12 +74,34 @@ def analyze_virality(content_text, has_media=False, target_audience="General"):
         "is_viral_candidate": score >= 80
     }
 
+import random
+import streamlit as st
+try:
+    import openai
+except ImportError:
+    openai = None
+
 def rewrite_for_virality(content_text, tone="Viral"):
     """
-    Simulates AI rewriting of content to maximize virality.
-    In production, this would use a real LLM.
+    Simulates AI rewriting or uses OpenAI if available.
     """
-    
+    api_key = st.secrets.get("OPENAI_API_KEY")
+    if api_key and openai:
+        try:
+            client = openai.OpenAI(api_key=api_key)
+            prompt = f"Rewrite the following marketing content to be extremely viral and engaging for social media. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic."
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            choices = response.choices[0].message.content.split("\n")
+            variations = [c.strip() for c in choices if len(c.strip()) > 20]
+            if len(variations) > 0:
+                return variations[:3]
+        except Exception as e:
+            st.error(f"AI API Error: {e}")
+
+    # Fallback simulation
     prefixes = [
         "🔥 السر اللي الكل بيدور عليه: ",
         "🚀 أخيراً، الحل النهائي لـ: ",

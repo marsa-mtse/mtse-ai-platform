@@ -3,16 +3,43 @@
 # ==========================================================
 
 import random
-from utils import t
+import streamlit as st
+import json
+try:
+    import openai
+except ImportError:
+    openai = None
 
 def generate_campaign_ideas(product_name, target_audience, platform="Meta (Facebook/Instagram)"):
     """
-    Generate ad copy ideas based on the platform.
-    If OpenAI is available in st.secrets, this would be an API call.
-    For simulation, we use a smart fallback engine.
+    Generate ad copy ideas. Uses OpenAI if API key is provided, otherwise falls back to simulation.
     """
     
-    # Advanced fallback logic mimicking an AI response
+    api_key = st.secrets.get("OPENAI_API_KEY")
+    if api_key and openai:
+        try:
+            client = openai.OpenAI(api_key=api_key)
+            prompt = f"""
+            Generate 3 creative ad copy variations for a product named '{product_name}' targeting '{target_audience}' for the platform '{platform}'.
+            Each variation must have a 'headline', 'primary_text', and 'cta'.
+            The language should be Arabic (Modern Standard or Professional Egyptian as appropriate).
+            Return the result as a list of 3 JSON objects.
+            """
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={ "type": "json_object" }
+            )
+            import json
+            data = json.loads(response.choices[0].message.content)
+            # Standardize keys if AI returns different casing
+            variations = data.get("variations", data.get("ads", []))
+            if variations:
+                return variations
+        except Exception as e:
+            st.error(f"AI API Error: {e}. Falling back to simulation.")
+
+    # FALLBACK SIMULATION ENGINE
     platforms_styles = {
         "Meta (Facebook/Instagram)": {
             "hooks": [
@@ -53,21 +80,14 @@ def generate_campaign_ideas(product_name, target_audience, platform="Meta (Faceb
     }
     
     selected = platforms_styles.get(platform, platforms_styles["Meta (Facebook/Instagram)"])
-    
-    # Generate 3 variations
     variations = []
     for i in range(3):
-        h = random.choice(selected["hooks"])
-        b = random.choice(selected["body"])
-        c = random.choice(selected["cta"])
-        
         variations.append({
-            "headline": h,
-            "primary_text": b,
-            "cta": c,
+            "headline": random.choice(selected["hooks"]),
+            "primary_text": random.choice(selected["body"]),
+            "cta": random.choice(selected["cta"]),
             "platform": platform
         })
-        
     return variations
 
 def get_social_preview_css():
