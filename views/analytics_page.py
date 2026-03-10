@@ -52,18 +52,28 @@ def render():
 
     if st.session_state.get("universal_analysis"):
         res = st.session_state.universal_analysis
-        with st.expander(t("👑 نتائج التحليل النخبوي (Elite AI Insights)", "👑 Elite AI Insights Results"), expanded=True):
-            st.markdown(f"#### {t('النشاط التجاري:', 'Industry:')} {res.get('industry', 'General')}")
+        with st.expander(t("🧠 رؤى الذكاء العالمي الشامل (Omni-Intelligence)", "🧠 Universal Omni-Intelligence Insights"), expanded=True):
+            st.markdown(f"### 🌐 {t('مجال التحليل:', 'Analysis Domain:')} {res.get('domain', 'General')}")
+            st.info(f"**{t('لب الموضوع وجوهره:', 'Core Essence:')}**\n\n{res.get('essence')}")
             
             c1, c2 = st.columns(2)
             with c1:
-                st.info(f"**{t('الملخص:', 'Summary:')}**\n\n{res.get('summary')}")
-                st.warning(f"**{t('الجمهور المستهدف:', 'Target Audience:')}**\n\n{res.get('audience')}")
-                st.markdown(f"**{t('قمع المبيعات:', 'Conversion Funnel:')}**\n\n{res.get('funnel_analysis')}")
+                st.markdown(f"#### 🔍 {t('رؤى الخبراء التحليلية:', 'Expert Strategic Insights:')}")
+                insights = res.get('insights', [])
+                if isinstance(insights, list):
+                    for i in insights: st.write(f"• {i}")
+                else: st.write(insights)
+                
             with c2:
-                st.success(f"**{t('تحليل SWOT (Elite):', 'Elite SWOT Analysis:')}**\n\n{res.get('swot')}")
-                st.markdown(f"**{t('إمكانية الانتشار:', 'Viral Potential:')}**\n\n{res.get('viral_loop')}")
-                st.write(f"**{t('خارطة الطريق:', 'The Roadmap:')}**\n\n{res.get('recommendations')}")
+                st.markdown(f"#### 🚀 {t('التأثير الاستراتيجي:', 'Future Impact:')}")
+                st.success(res.get('impact', ''))
+                
+            st.markdown("---")
+            st.markdown(f"#### 🗺️ {t('خارطة الطريق العالمية (The Roadmap):', 'The Universal Roadmap:')}")
+            roadmap = res.get('roadmap', [])
+            if isinstance(roadmap, list):
+                for r in roadmap: st.write(f"✅ {r}")
+            else: st.write(roadmap)
 
         # --- PDF GENERATION ---
         st.markdown("### 📄 " + t("استخراج التقرير الرسمي", "Export Official Report"))
