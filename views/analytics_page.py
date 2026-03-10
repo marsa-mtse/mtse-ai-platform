@@ -52,27 +52,47 @@ def render():
 
     if st.session_state.get("universal_analysis"):
         res = st.session_state.universal_analysis
-        with st.expander(t("🧠 رؤى الذكاء العالمي الشامل (Omni-Intelligence)", "🧠 Universal Omni-Intelligence Insights"), expanded=True):
-            st.markdown(f"### 🌐 {t('مجال التحليل:', 'Analysis Domain:')} {res.get('domain', 'General')}")
-            st.info(f"**{t('لب الموضوع وجوهره:', 'Core Essence:')}**\n\n{res.get('essence')}")
+        with st.expander(t("🧠 رؤى الذكاء العالمي النخبوي (MTSE OMNI-ELITE)", "🧠 Universal Elite-Intelligence Insights (OMNI-ELITE)"), expanded=True):
+            st.markdown(f"### 🌐 {t('مجال الاستخبارات:', 'Intelligence Domain:')} {res.get('domain', 'General')}")
             
-            c1, c2 = st.columns(2)
+            # Elite Status Check
+            if "المحرك الاحتياطي" in res.get('essence', ''):
+                st.warning(t("⚠️ تنبيه: أنت تستخدم المحرك الاحتياطي. يرجى تفعيل مفاتيح API للحصول على التحليل النخبوي (10x Depth).", 
+                             "⚠️ Warning: Using Fallback Engine. Activate API keys for Elite Analysis (10x Depth)."))
+
+            st.info(f"**{t('لب الموضوع وجوهره الاستراتيجي:', 'Strategic Core Essence:')}**\n\n{res.get('essence')}")
+            
+            # --- DEEP ANALYSIS SECTION ---
+            st.markdown(f"#### 🔍 {t('التحليل الاستراتيجي المعمق (Deep Dive):', 'Strategic Deep Dive (10x Depth):')}")
+            st.write(res.get('deep_analysis', ''))
+            
+            st.markdown("---")
+            
+            # --- COMMAND CENTER GRID ---
+            c1, c2, c3 = st.columns(3)
             with c1:
-                st.markdown(f"#### 🔍 {t('رؤى الخبراء التحليلية:', 'Expert Strategic Insights:')}")
-                insights = res.get('insights', [])
-                if isinstance(insights, list):
-                    for i in insights: st.write(f"• {i}")
-                else: st.write(insights)
+                st.markdown(f"#### 📊 {t('مصفوفة المتجهات:', 'Strategic Matrix:')}")
+                matrix = res.get('strategic_matrix', [])
+                if isinstance(matrix, list):
+                    for m in matrix: st.write(f"◈ {m}")
+                else: st.write(matrix)
                 
             with c2:
-                st.markdown(f"#### 🚀 {t('التأثير الاستراتيجي:', 'Future Impact:')}")
-                st.success(res.get('impact', ''))
+                st.markdown(f"#### ⚠️ {t('تقييم المخاطر:', 'Risk Assessment:')}")
+                risks = res.get('risk_assessment', [])
+                if isinstance(risks, list):
+                    for r in risks: st.write(f"❌ {r}")
+                else: st.write(risks)
+                
+            with c3:
+                st.markdown(f"#### 🚀 {t('التوقعات المستقبلية:', 'Long-term Forecast:')}")
+                st.success(res.get('forecast', ''))
                 
             st.markdown("---")
-            st.markdown(f"#### 🗺️ {t('خارطة الطريق العالمية (The Roadmap):', 'The Universal Roadmap:')}")
+            st.markdown(f"#### 🗺️ {t('خارطة الطريق التنفيذية (The Universal Roadmap):', 'The Executive Roadmap:')}")
             roadmap = res.get('roadmap', [])
             if isinstance(roadmap, list):
-                for r in roadmap: st.write(f"✅ {r}")
+                for r in roadmap: st.write(f"➤ {r}")
             else: st.write(roadmap)
 
         # --- PDF GENERATION ---
