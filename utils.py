@@ -56,7 +56,7 @@ def format_arabic(text):
 
 def generate_branded_pdf(report_data, lang="Both"):
     """
-    Generates a professional PDF with branding.
+    Generates a professional PDF with branding and Unicode support.
     """
     import os
     FPDF, _, _ = get_pdf_engine()
@@ -65,6 +65,23 @@ def generate_branded_pdf(report_data, lang="Both"):
 
     try:
         class BrandedPDF(FPDF):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+                # Register Unicode Fonts for Arabic
+                font_reg = 'assets/fonts/Amiri-Regular.ttf'
+                font_bold = 'assets/fonts/Amiri-Bold.ttf'
+                if os.path.exists(font_reg):
+                    self.add_font('Amiri', '', font_reg, uni=True)
+                    self.main_font = 'Amiri'
+                else:
+                    self.main_font = 'Helvetica'
+                
+                if os.path.exists(font_bold):
+                    self.add_font('Amiri', 'B', font_bold, uni=True)
+                    self.bold_font = 'Amiri'
+                else:
+                    self.bold_font = 'Helvetica'
+
             def header(self):
                 logo_path = 'assets/logo_premium.png'
                 if os.path.exists(logo_path):
@@ -73,7 +90,7 @@ def generate_branded_pdf(report_data, lang="Both"):
                     except Exception as e:
                         st.warning(f"Logo print error: {e}")
                 else:
-                    self.set_font('Helvetica', 'B', 15)
+                    self.set_font(self.bold_font, 'B', 15)
                     self.cell(0, 10, 'MTSE AI Platform', 0, 0, 'L')
                 
                 self.ln(20)
@@ -83,30 +100,33 @@ def generate_branded_pdf(report_data, lang="Both"):
 
             def footer(self):
                 self.set_y(-15)
-                self.set_font('Helvetica', 'I', 8)
+                self.set_font(self.main_font, '', 8)
                 self.set_text_color(150)
                 self.cell(0, 10, f'Page {self.page_no()} | MTSE Digital Marketing Engine', 0, 0, 'C')
 
         pdf = BrandedPDF()
         pdf.add_page()
         
-        pdf.set_font('Helvetica', 'B', 18)
+        # Performance: Set font once if possible
+        pdf.set_font(pdf.bold_font, 'B', 18)
         pdf.set_text_color(26, 115, 232)
         title = format_arabic(report_data.get("title", "Strategic Report"))
-        pdf.cell(0, 12, title, 0, 1, 'C')
-        pdf.ln(8)
+        pdf.cell(0, 15, title, 0, 1, 'C')
+        pdf.ln(10)
 
         for section in report_data.get("sections", []):
-            pdf.set_font('Helvetica', 'B', 12)
+            # Heading
+            pdf.set_font(pdf.bold_font, 'B', 14)
             pdf.set_text_color(33, 33, 33)
             heading = format_arabic(section.get("heading", ""))
-            pdf.cell(0, 10, heading, 0, 1, 'L')
+            pdf.cell(0, 12, heading, 0, 1, 'L')
             
-            pdf.set_font('Helvetica', '', 10)
+            # Content
+            pdf.set_font(pdf.main_font, '', 11)
             pdf.set_text_color(66, 66, 66)
             content = format_arabic(section.get("content", ""))
-            pdf.multi_cell(0, 7, content)
-            pdf.ln(4)
+            pdf.multi_cell(0, 8, content)
+            pdf.ln(6)
 
         return pdf.output()
     except Exception as e:
