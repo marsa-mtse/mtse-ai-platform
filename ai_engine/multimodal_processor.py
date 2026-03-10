@@ -25,7 +25,7 @@ class OmniProcessor:
                     self.available_models.append(m.name.replace("models/", ""))
         except:
              # Fallback to standard names if list_models fails
-             self.available_models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']
+             self.available_models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash']
         
         self.model = genai.GenerativeModel(model_name)
 

@@ -71,7 +71,7 @@ def analyze_universal_link(url, depth="Deep"):
         model_candidates = [
             'gemini-2.0-flash',
             'gemini-1.5-flash',
-            'gemini-1.5-flash-latest',
+            'gemini-1.5-flash',
         ]
 
         # Phase 10: AI Domain Detection

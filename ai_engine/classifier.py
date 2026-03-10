@@ -28,7 +28,7 @@ class AIClassifier:
         
         Output only the category name.
         """
-        candidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']
+        candidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash']
         
         for model_name in candidates:
             try:

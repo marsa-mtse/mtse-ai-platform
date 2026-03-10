@@ -24,7 +24,7 @@ def generate_campaign_ideas(product_name, target_audience, platform="Meta (Faceb
             # Prioritize Gemini 2.0/2.5 Flash for best speed and quality
             success_model = None
             response = None
-            for model_name in ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']:
+            for model_name in ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash']:
                 try:
                     model = genai.GenerativeModel(model_name)
                     prompt = f"Generate 3 ad copies for {product_name} targeting {target_audience} on {platform}. Language: Arabic. JSON format with 'headline', 'primary_text', 'cta'."

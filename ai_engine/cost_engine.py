@@ -74,7 +74,7 @@ class CostEngine:
         ]
         """
         
-        candidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']
+        candidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash']
         last_err = "Unknown"
         
         # Prepare content parts
@@ -126,7 +126,7 @@ class CostEngine:
             ...
         ]
         """
-        candidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']
+        candidates = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash']
         last_err = "Unknown"
         
         for model_name in candidates:
