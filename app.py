@@ -29,6 +29,7 @@ from views import reports_page
 from views import users_page
 from views import billing_page
 from views import settings_page
+from views import expert_tools_page
 
 # ==============================
 # INIT
@@ -157,6 +158,7 @@ with st.sidebar:
     nav_items = [
         ("Dashboard", "🏠", t("لوحة التحكم", "Dashboard")),
         ("Analytics", "📊", t("التحليلات", "Analytics")),
+        ("Expert Tools", "🛠️", t("أدوات النخبة", "Expert Tools")),
         ("AI Engine", "🤖", t("محرك AI", "AI Engine")),
         ("Reports", "📁", t("التقارير", "Reports")),
         ("Users", "👥", t("المستخدمين", "Users")),
@@ -197,6 +199,7 @@ page = st.session_state.page
 page_map = {
     "Dashboard": dashboard_page,
     "Analytics": analytics_page,
+    "Expert Tools": expert_tools_page,
     "AI Engine": ai_engine_page,
     "Reports": reports_page,
     "Users": users_page,

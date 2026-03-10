@@ -28,9 +28,9 @@ def render():
     col1, col2, col3 = st.columns(3)
     
     plans_info = [
-        {"name": "Starter", "price": PLAN_PRICING["Starter"], "features": [t("أساسيات التحليل", "Basic Analytics"), t("10 تقارير/شهر", "10 Reports/mo"), t("بدون ذكاء اصطناعي", "No AI")]},
-        {"name": "Pro", "price": PLAN_PRICING["Pro"], "features": [t("تكامل المنصات (APIs)", "Platform APIs"), t("مولد الإعلانات (AI)", "AI Ad Generator"), t("50 تقرير/شهر", "50 Reports/mo")]},
-        {"name": "Business", "price": PLAN_PRICING["Business"], "features": [t("محلل الانتشار (Virality)", "Virality Analyzer"), t("تنبؤ الاتجاهات", "Trend Predictor"), t("علامة بيضاء", "White Label"), t("تقارير مفتوحة", "Unlimited Reports")]}
+        {"name": "Explorer", "price": PLAN_PRICING["Explorer"], "features": [t("التحليل العالمي المنفرد", "Single Omni-Analysis"), t("10 تقارير نخبورية/شهر", "10 Elite Reports/mo"), t("دعم البريد الإلكتروني", "Email Support")]},
+        {"name": "Strategist", "price": PLAN_PRICING["Strategist"], "features": [t("ساحة معركة المنافسين", "Competitor Battleground"), t("تكامل المنصات (APIs)", "Platform APIs"), t("100 تقرير نخبوي/شهر", "100 Elite Reports/mo"), t("دعم تقني سريع", "Priority Support")]},
+        {"name": "Command", "price": PLAN_PRICING["Command"], "features": [t("مركز قيادة المشاعر", "Sentiment Command"), t("تحليل غير محدود", "Unlimited Analysis"), t("العلامة البيضاء (White Label)", "White Label Engine"), t("دعم مخصص 24/7", "Dedicated Elite Support")]}
     ]
     
     cols = [col1, col2, col3]
@@ -38,16 +38,16 @@ def render():
     for i, plan in enumerate(plans_info):
         with cols[i]:
             is_current = (current_plan == plan["name"])
-            border_color = "#6366f1" if plan["name"] == "Pro" else "#0ea5e9" if plan["name"] == "Business" else "#334155"
+            border_color = "#6366f1" if plan["name"] == "Strategist" else "#0ea5e9" if plan["name"] == "Command" else "#334155"
             bg_color = "rgba(99, 102, 241, 0.1)" if is_current else "transparent"
             
             st.markdown(f"""
-            <div class="glass-card" style="border: 2px solid {border_color}; text-align:center; position:relative; background:{bg_color};">
+            <div class="glass-card" style="border: 2px solid {border_color}; text-align:center; position:relative; background:{bg_color}; min-height:450px;">
                 {"<div style='position:absolute; top:-12px; right:10px; background:#6366f1; color:white; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold;'>Current</div>" if is_current else ""}
                 <h3 style="margin-top:0;">{plan["name"]}</h3>
-                <div style="font-size:2rem; font-weight:bold; color:{border_color}; margin:16px 0;">${plan["price"]}<span style="font-size:1rem; color:#94a3b8;">/mo</span></div>
-                <ul style="list-style:none; padding:0; text-align:left; color:#cbd5e1; margin-bottom:24px;">
-                    {''.join([f'<li style="margin:8px 0;">✅ {feat}</li>' for feat in plan['features']])}
+                <div style="font-size:2.5rem; font-weight:bold; color:{border_color}; margin:16px 0;">${plan["price"]}<span style="font-size:1rem; color:#94a3b8;">/mo</span></div>
+                <ul style="list-style:none; padding:0; text-align:left; color:#cbd5e1; margin-bottom:24px; font-size: 0.9rem;">
+                    {''.join([f'<li style="margin:10px 0;">✨ {feat}</li>' for feat in plan['features']])}
                 </ul>
             </div>
             """, unsafe_allow_html=True)

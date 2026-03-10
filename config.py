@@ -7,15 +7,15 @@
 # ==============================
 
 PLAN_LIMITS = {
-    "Starter": {"reports": 5, "uploads": 5},
-    "Pro": {"reports": 25, "uploads": 25},
-    "Business": {"reports": 9999, "uploads": 9999}
+    "Explorer": {"reports": 10, "uploads": 10},
+    "Strategist": {"reports": 100, "uploads": 100},
+    "Command": {"reports": 9999, "uploads": 9999}
 }
 
 PLAN_PRICING = {
-    "Starter": 29,
-    "Pro": 99,
-    "Business": 299
+    "Explorer": 19,
+    "Strategist": 69,
+    "Command": 199
 }
 
 AVAILABLE_ROLES = ["Analyst", "Viewer", "Marketing Manager"]

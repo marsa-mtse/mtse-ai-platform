@@ -6,37 +6,41 @@ from config import PLAN_LIMITS
 
 class PlanManager:
     """
-    Manages access to features based on the user's plan.
+    Manages access to features based on the MTSE Disruptor tiers.
     """
     def __init__(self, current_plan):
         self.plan = current_plan
 
     def can_access_ai_generator(self):
-        """AI Generator is available to Pro and Business."""
-        return self.plan in ["Pro", "Business"]
+        """Strategist and Command only."""
+        return self.plan in ["Strategist", "Command"]
 
-    def can_access_viral_analyzer(self):
-        """Viral Analyzer is Business only."""
-        return self.plan == "Business"
+    def can_access_universal_analyzer(self):
+        """All plans have basic access, but depth varies."""
+        return True
 
-    def can_access_trend_predictor(self):
-        """Trend Predictor is Business only."""
-        return self.plan == "Business"
+    def can_access_competitor_battleground(self):
+        """Strategist and Command."""
+        return self.plan in ["Strategist", "Command"]
+
+    def can_access_sentiment_command(self):
+        """Command (Ultimate) only."""
+        return self.plan == "Command"
         
     def can_access_integrations(self):
-        """Direct API integrations available to Pro and Business."""
-        return self.plan in ["Pro", "Business"]
+        """Strategist and Command."""
+        return self.plan in ["Strategist", "Command"]
 
     def can_access_white_label(self):
-        """White Label is Business only."""
-        return self.plan == "Business"
+        """Command only."""
+        return self.plan == "Command"
 
     def get_features_list(self):
         """Return a dictionary of feature flags for the current plan."""
         return {
-            "ai_campaign_generator": self.can_access_ai_generator(),
-            "viral_analyzer": self.can_access_viral_analyzer(),
-            "trend_predictor": self.can_access_trend_predictor(),
+            "ai_generator": self.can_access_ai_generator(),
+            "competitor_battleground": self.can_access_competitor_battleground(),
+            "sentiment_command": self.can_access_sentiment_command(),
             "api_integrations": self.can_access_integrations(),
             "white_label": self.can_access_white_label(),
             "reports_limit": PLAN_LIMITS.get(self.plan, {}).get("reports", 0),
