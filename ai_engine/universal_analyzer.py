@@ -30,9 +30,21 @@ def analyze_universal_link(url, depth="Deep"):
         ]
 
         prompt = f"""
-        Perform a {depth} marketing and strategic analysis of this URL: {url}
-        Output ONLY a JSON with keys: 'summary', 'audience', 'sentiment', 'swot', 'recommendations'.
-        Language: Arabic.
+        ACT AS AN ELITE GLOBAL STRATEGIC MARKETING CONSULTANT.
+        Perform an EXTREME DEEP DIVE analysis of this URL: {url}
+        
+        Your goal is to provide world-class insights that make this platform #1 in the world.
+        
+        1. Identify Industry & Niche: What specific business category is this?
+        2. Customer Persona (Deep): Detailed demographics, psychographics, and pain points.
+        3. Strategic SWOT (Elite): Beyond the basics. Identify "Unfair Advantages" and "Existential Threats".
+        4. Conversion Funnel Analysis: How do they turn visitors into customers? Where is it leaking?
+        5. The "Viral Loop" Potential: How can this content grow exponentially?
+        6. Actionable Blueprint (5-10 Steps): Precise, technical, and strategic steps to dominate the niche.
+        
+        Output the result in a structured JSON format with these exact keys: 
+        'industry', 'summary', 'audience', 'sentiment', 'swot', 'funnel_analysis', 'viral_loop', 'recommendations'.
+        Language: High-level professional Arabic.
         """
 
         for model_name in model_candidates:

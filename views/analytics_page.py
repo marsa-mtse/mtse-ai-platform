@@ -52,14 +52,18 @@ def render():
 
     if st.session_state.get("universal_analysis"):
         res = st.session_state.universal_analysis
-        with st.expander(t("📈 عرض نتائج التحليل الاستراتيجي", "📈 View Strategic Analysis Results"), expanded=True):
-            rc1, rc2 = st.columns(2)
-            with rc1:
+        with st.expander(t("👑 نتائج التحليل النخبوي (Elite AI Insights)", "👑 Elite AI Insights Results"), expanded=True):
+            st.markdown(f"#### {t('النشاط التجاري:', 'Industry:')} {res.get('industry', 'General')}")
+            
+            c1, c2 = st.columns(2)
+            with c1:
                 st.info(f"**{t('الملخص:', 'Summary:')}**\n\n{res.get('summary')}")
                 st.warning(f"**{t('الجمهور المستهدف:', 'Target Audience:')}**\n\n{res.get('audience')}")
-            with rc2:
-                st.success(f"**{t('تحليل SWOT:', 'SWOT Analysis:')}**\n\n{res.get('swot')}")
-                st.write(f"**{t('التوصيات:', 'Recommendations:')}**\n\n{res.get('recommendations')}")
+                st.markdown(f"**{t('قمع المبيعات:', 'Conversion Funnel:')}**\n\n{res.get('funnel_analysis')}")
+            with c2:
+                st.success(f"**{t('تحليل SWOT (Elite):', 'Elite SWOT Analysis:')}**\n\n{res.get('swot')}")
+                st.markdown(f"**{t('إمكانية الانتشار:', 'Viral Potential:')}**\n\n{res.get('viral_loop')}")
+                st.write(f"**{t('خارطة الطريق:', 'The Roadmap:')}**\n\n{res.get('recommendations')}")
 
         # --- PDF GENERATION ---
         st.markdown("### 📄 " + t("استخراج التقرير الرسمي", "Export Official Report"))
