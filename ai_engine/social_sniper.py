@@ -45,7 +45,7 @@ class SocialSniper:
             "viral_potential": "مدى إمكانية الانتشار الفيروسي"
         }}
         """
-        candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
         last_err = "Unknown"
         
         for model_name in candidates:

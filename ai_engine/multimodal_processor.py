@@ -22,8 +22,8 @@ class OmniProcessor:
         """Processes images using Vision capabilities with model rotation."""
         img = Image.open(io.BytesIO(image_bytes))
         
-        # Phase 10: Model Rotation for Vision
-        candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-1.5-pro-latest']
+        # Phase 10: Model Rotation for Vision (Stable Only)
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro-vision']
         last_err = "Unknown"
         
         for model_name in candidates:
