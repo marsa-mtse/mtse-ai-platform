@@ -14,6 +14,16 @@ class SocialSniper:
         api_key = st.secrets.get("GOOGLE_API_KEY")
         if api_key:
             genai.configure(api_key=api_key.strip())
+        
+        # Discover accessible models dynamically
+        self.available_models = []
+        try:
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    self.available_models.append(m.name.replace("models/", ""))
+        except:
+             self.available_models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+        
         self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def audit_profile(self, url):
@@ -45,10 +55,9 @@ class SocialSniper:
             "viral_potential": "مدى إمكانية الانتشار الفيروسي"
         }}
         """
-        candidates = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+        # Use dynamically discovered models
         last_errs = []
-        
-        for model_name in candidates:
+        for model_name in self.available_models:
             try:
                 model = genai.GenerativeModel(model_name)
                 response = model.generate_content(prompt)
