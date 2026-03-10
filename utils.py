@@ -123,18 +123,33 @@ def generate_branded_pdf(report_data, lang="Both"):
         pdf.ln(10)
 
         for section in report_data.get("sections", []):
-            # Heading
+            # 🎨 PREMIUM SECTION HEADER
+            pdf.set_fill_color(26, 115, 232) # MTSE Blue
+            pdf.set_text_color(255, 255, 255)
             pdf.set_font(pdf.bold_font, 'B', 14)
-            pdf.set_text_color(33, 33, 33)
-            heading = format_arabic(section.get("heading", ""))
-            pdf.cell(0, 12, heading, 0, 1, 'L')
             
-            # Content
+            heading = format_arabic(section.get("heading", ""))
+            pdf.cell(0, 10, f"  {heading}", 0, 1, 'L', fill=True)
+            
+            # --- CONTENT ---
+            pdf.ln(3)
+            pdf.set_text_color(44, 62, 80)
             pdf.set_font(pdf.main_font, '', 11)
-            pdf.set_text_color(66, 66, 66)
-            content = format_arabic(section.get("content", ""))
-            pdf.multi_cell(0, 8, content)
-            pdf.ln(6)
+            
+            content = section.get("content", "")
+            
+            # Smart Table/List Rendering
+            if any(marker in content for marker in ["◈", "⚠", "➤"]):
+                lines = content.split("\n")
+                for line in lines:
+                    if line.strip():
+                        pdf.set_fill_color(245, 247, 250)
+                        pdf.multi_cell(0, 8, format_arabic(line), 0, 'L', fill=True)
+                        pdf.ln(1)
+            else:
+                pdf.multi_cell(0, 8, format_arabic(content), 0, 'L')
+            
+            pdf.ln(8)
 
         return bytes(pdf.output())
     except Exception as e:

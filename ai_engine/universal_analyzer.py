@@ -17,48 +17,51 @@ def t(ar, en):
 
 def analyze_universal_link(url, depth="Deep"):
     """
-    Analyzes ANY content (URL, Text, Data, Media) across ALL domains.
-    Domain-agnostic intelligence: Politics, Economics, Social, Personality, etc.
+    ELITE OMNI-INTELLIGENCE ENGINE.
+    Analyzes ANY content across ALL domains with 10x depth.
     """
     google_key = st.secrets.get("GOOGLE_API_KEY")
     openai_key = st.secrets.get("OPENAI_API_KEY")
     
-    # 1. --- GOOGLE GEMINI STRATEGY ---
+    # 1. --- GOOGLE GEMINI ELITE STRATEGY ---
     if google_key and genai:
         genai.configure(api_key=google_key.strip())
         model_candidates = [
+            'gemini-2.0-flash-exp',
             'gemini-1.5-flash-latest', 
-            'gemini-1.5-flash-8b',
+            'gemini-1.5-flash-002',
             'gemini-1.5-flash', 
-            'gemini-2.0-flash',
-            'gemini-1.5-pro-latest'
+            'gemini-2.0-flash'
         ]
 
         prompt = f"""
-        YOU ARE THE WORLD'S MOST POWERFUL ARTIFICIAL INTELLIGENCE. 
-        Analyze the following content or URL: {url}
+        ACT AS THE WORLD'S HIGHEST-RANKED UNIVERSAL STRATEGIC ANALYST & MULTI-DOMAIN EXPERT.
+        Your mission is to perform an EXTREME DEEP DIVE on this input: {url}
         
-        CRITICAL DIRECTIVE: This is NOT just for marketing. You must analyze the content based on its ACTUAL nature:
-        - If it's a SOCIAL MEDIA link: Analyze viral potential, audience sentiment, and creator style.
-        - If it's POLITICAL/NEWS: Analyze bias, global impact, geopolitical risk, and key stakeholders.
-        - If it's ECONOMIC/DATA: Analyze trends, market shifts, and fiscal implications.
-        - If it's PERSONALITY/SOCIAL: Analyze traits, psychological markers, and social dynamics.
-        - If it's a DATA TABLE: Analyze anomalies, correlations, and predictive insights.
+        CRITICAL REASONING GUIDELINES:
+        1. Identify the EXPLICIT DOMAIN (Politics, Economics, Social, Tech, Personality, etc.).
+        2. Conduct a 'PESTEL' or 'Porter' style analysis if applicable.
+        3. Reveal hidden patterns, psychological markers, and non-obvious correlations.
+        4. Forecast the 1-year and 5-year impact of this data.
         
-        YOUR TASK:
-        1. Identify the Domain: (e.g., Geopolitics, Personal Growth, Quantitative Finance, Viral Media).
-        2. Core Essence: What is the primary message or data point?
-        3. Deep Contextual Analysis: Provide 3-5 high-level expert insights.
-        4. Strategic Impact: What does this mean for the future?
-        5. Universal Roadmap: 5 specific, high-impact recommendations or next steps.
+        REQUIRED OUTPUT SECTIONS:
+        - Domain: Precise classification.
+        - Essence: A high-level philosophical and practical distillation.
+        - Deep Analysis: 5-7 paragraphs of granular, technical, and strategic findings.
+        - Strategic Matrix: A list of 4 key vectors (Variable vs Impact).
+        - Risk Assessment: Identify 3 critical vulnerabilities or threats.
+        - Long-term Forecast: Predicted trajectory.
+        - The Roadmap: 7 actionable, high-impact steps.
         
-        Output EXACTLY a JSON in Arabic:
+        Output EXACTLY a JSON in professional Arabic:
         {{
-            "domain": "اسم المجال",
-            "essence": "لب الموضوع",
-            "insights": ["تحليل خبير 1", "تحليل خبير 2", ...],
-            "impact": "الأثر الاستراتيجي المستقبلي",
-            "roadmap": ["خطوة 1", "خطوة 2", ...]
+            "domain": "المجال الدقيق",
+            "essence": "جوهر وفلسفة المحتوى",
+            "deep_analysis": "تحليل معمق وشامل (أكثر من 500 كلمة)",
+            "strategic_matrix": ["متجه 1: شرح", "متجه 2: شرح", ...],
+            "risk_assessment": ["خطر 1: تحليل", "خطر 2: تحليل", ...],
+            "forecast": "التوقعات المستقبلية والمسار المتوقع",
+            "roadmap": ["خطوة استراتيجية 1", "خطوة استراتيجية 2", ...]
         }}
         """
 
@@ -76,13 +79,13 @@ def analyze_universal_link(url, depth="Deep"):
                 if "429" in err or "404" in err or "Quota" in err: continue
                 else: break
 
-    # 2. --- OPENAI FALLBACK ---
+    # 2. --- OPENAI ELITE FALLBACK ---
     if openai_key and openai:
         try:
             client = openai.OpenAI(api_key=openai_key)
-            prompt = f"Universal Expert Analysis in Arabic for: {url}. JSON: domain, essence, insights (list), impact, roadmap (list)."
+            prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={ "type": "json_object" }
             )
@@ -90,18 +93,20 @@ def analyze_universal_link(url, depth="Deep"):
         except:
             pass
 
-    # 3. --- STRATEGIC SAFETY ENGINE ---
+    # 3. --- ELITE SAFETY ENGINE ---
     return {
-        "domain": "تحليل عام وموحد",
-        "essence": "جاري معالجة المحتوى عبر المحرك الاحتياطي.",
-        "insights": ["رصد أولي للبيانات.", "تحليل متقدم للأنماط."],
-        "impact": "تأثير إيجابي طويل المدى.",
-        "roadmap": ["مراقبة التطورات.", "اتخاذ قرارات بناءً على البيانات."]
+        "domain": "الاستخبارات الرقمية العامة",
+        "essence": "تحليل أولي عبر المحرك الاحتياطي العميق.",
+        "deep_analysis": "النظام حالياً يقوم برصد البيانات الأساسية. يرجى التأكد من تفعيل مفاتيح ה-API للحصول على التحليل النخبوي الكامل الذي يتجاوز 1000 كلمة.",
+        "strategic_matrix": ["الانتشار: مرصود", "التفاعل: متوسط"],
+        "risk_assessment": ["نقص البيانات اللحظية"],
+        "forecast": "نمو مستقر مع حاجة لتحديث الرؤى.",
+        "roadmap": ["تفعيل الربط المتقدم", "تحليل المنافسين"]
     }
 
 def generate_strategic_insights(analysis_data, lang="Both"):
     """
-    Refines the universal analysis data into a world-class formal report.
+    Refines the elite universal analysis data into a formal, world-class report.
     """
     sections = []
     
@@ -109,34 +114,49 @@ def generate_strategic_insights(analysis_data, lang="Both"):
     dom = analysis_data.get("domain", "General Intelligence")
     ess = analysis_data.get("essence", "")
     sections.append({
-        "heading": f"1. {t('مجال التحليل وجوهر المحتوى', 'Analysis Domain & Core Essence')}",
-        "content": f"{t('المجال:', 'Domain:')} {dom}\n\n{ess}"
+        "heading": f"1. {t('مجال الاستخبارات وجوهر الرؤية', 'Intelligence Domain & Vision Essence')}",
+        "content": f"{t('المجال النخبوي:', 'Elite Domain:')} {dom}\n\n{ess}"
     })
     
-    # 2. Expert Insights
-    insights = analysis_data.get("insights", [])
-    insights_str = "\n".join([f"• {i}" for i in insights]) if isinstance(insights, list) else insights
+    # 2. Deep Analysis (The Core)
+    analysis = analysis_data.get("deep_analysis", "")
     sections.append({
-        "heading": f"2. {t('رؤى وحقائق الخبراء التحليلية', 'Deep Expert Insights & Findings')}",
-        "content": insights_str
+        "heading": f"2. {t('التحليل الاستراتيجي المعمق (10x Depth)', 'Elite Strategic Deep Dive')}",
+        "content": analysis
     })
     
-    # 3. Strategic Impact
-    impact = analysis_data.get("impact", "")
+    # 3. Strategic Matrix
+    matrix = analysis_data.get("strategic_matrix", [])
+    matrix_str = "\n".join([f"◈ {m}" for m in matrix]) if isinstance(matrix, list) else matrix
     sections.append({
-        "heading": f"3. {t('التأثير الاستراتيجي والمستقبلي', 'Future Strategic Impact')}",
-        "content": impact
+        "heading": f"3. {t('مصفوفة المتجهات الاستراتيجية', 'Strategic Vector Matrix')}",
+        "content": matrix_str
     })
 
-    # 4. Universal Roadmap
-    roadmap = analysis_data.get("roadmap", [])
-    roadmap_str = "\n".join([f"• {r}" for r in roadmap]) if isinstance(roadmap, list) else roadmap
+    # 4. Risk Assessment
+    risks = analysis_data.get("risk_assessment", [])
+    risks_str = "\n".join([f"⚠ {r}" for r in risks]) if isinstance(risks, list) else risks
     sections.append({
-        "heading": f"4. {t('خارطة الطريق والتوصيات العالمية', 'Universal Roadmap & Strategic Steps')}",
+        "heading": f"4. {t('تقييم المخاطر والتهديدات النخبوية', 'Elite Risk & Threat Assessment')}",
+        "content": risks_str
+    })
+
+    # 5. Long-term Forecast
+    forecast = analysis_data.get("forecast", "")
+    sections.append({
+        "heading": f"5. {t('التوقعات والمسار المستقبلي بعيد المدى', 'Long-term Strategic Forecast')}",
+        "content": forecast
+    })
+
+    # 6. Elite Roadmap
+    roadmap = analysis_data.get("roadmap", [])
+    roadmap_str = "\n".join([f"➤ {r}" for r in roadmap]) if isinstance(roadmap, list) else roadmap
+    sections.append({
+        "heading": f"6. {t('خارطة الطريق التنفيذية العالمية', 'Universal Executive Roadmap')}",
         "content": roadmap_str
     })
     
     return {
-        "title": t("تقرير الاستخبارات والتحليل العالمي - MTSE Omni Intelligence", "Universal Intelligence Report - MTSE Omni Intelligence"),
+        "title": t("تقرير الاستخبارات والتحليل العالمي النخبوي - MTSE OMNI ELITE", "Elite Universal Intelligence Report - MTSE OMNI ELITE"),
         "sections": sections
     }
