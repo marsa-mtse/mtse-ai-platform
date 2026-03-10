@@ -19,7 +19,7 @@ def render():
     username = st.session_state.username
     plan = st.session_state.plan
     usage = get_usage(username)
-    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["Starter"])
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["Explorer"])
 
     st.markdown(f"""
     <div class="glass-card animate-in" style="text-align:center;">

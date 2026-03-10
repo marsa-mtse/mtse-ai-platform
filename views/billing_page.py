@@ -38,22 +38,29 @@ def render():
     for i, plan in enumerate(plans_info):
         with cols[i]:
             is_current = (current_plan == plan["name"])
-            # Using brighter, high-contrast colors for prices
-            accent_color = "#818cf8" if plan["name"] == "Strategist" else "#22d3ee" if plan["name"] == "Command" else "#94a3b8"
-            border_color = "#6366f1" if plan["name"] == "Strategist" else "#0ea5e9" if plan["name"] == "Command" else "#334155"
-            bg_color = "rgba(99, 102, 241, 0.1)" if is_current else "rgba(30, 41, 59, 0.5)"
+            # Using brighter, high-contrast colors for ALL tiers to ensure premium look
+            accent_color = "#fbbf24" if plan["name"] == "Explorer" else "#c084fc" if plan["name"] == "Strategist" else "#22d3ee"
+            border_color = "#fbbf24" if plan["name"] == "Explorer" else "#a855f7" if plan["name"] == "Strategist" else "#0ea5e9"
+            bg_color = "rgba(251, 191, 36, 0.05)" if plan["name"] == "Explorer" else "rgba(168, 85, 247, 0.05)" if plan["name"] == "Strategist" else "rgba(14, 165, 233, 0.05)"
             
+            # Highlight if current
+            if is_current:
+                bg_color = "rgba(99, 102, 241, 0.2)"
+                border_color = "#6366f1"
+
             st.markdown(f"""
-            <div class="glass-card" style="border: 2px solid {border_color}; text-align:center; position:relative; background:{bg_color}; min-height:480px;">
+            <div class="glass-card" style="border: 2px solid {border_color}; text-align:center; position:relative; background:{bg_color}; min-height:500px; display: flex; flex-direction: column; justify-content: space-between;">
                 {"<div style='position:absolute; top:-12px; right:10px; background:#6366f1; color:white; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold;'>Current</div>" if is_current else ""}
-                <h3 style="margin-top:0; color:#f8fafc;">{plan["name"]}</h3>
-                <div style="font-size:3rem; font-weight:800; color:white; margin:16px 0;">
-                    <span style="font-size:1.5rem; vertical-align:top; color:{accent_color};">$</span>{plan["price"]}
-                    <span style="font-size:1.1rem; color:#94a3b8; font-weight:400;">/mo</span>
+                <div style="flex-grow: 1;">
+                    <h3 style="margin-top:0; color:#f8fafc; font-size: 1.5rem;">{plan["name"]}</h3>
+                    <div style="font-size:3.2rem; font-weight:900; color:white; margin:20px 0;">
+                        <span style="font-size:1.6rem; vertical-align:top; color:{accent_color}; font-weight:700;">$</span>{plan["price"]}
+                        <span style="font-size:1.2rem; color:#94a3b8; font-weight:400;">/mo</span>
+                    </div>
+                    <ul style="list-style:none; padding:0; text-align:left; color:#cbd5e1; margin-bottom:30px; font-size: 1rem;">
+                        {''.join([f'<li style="margin:14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">✨ {feat}</li>' for feat in plan['features']])}
+                    </ul>
                 </div>
-                <ul style="list-style:none; padding:0; text-align:left; color:#cbd5e1; margin-bottom:24px; font-size: 0.95rem;">
-                    {''.join([f'<li style="margin:12px 0;">🔹 {feat}</li>' for feat in plan['features']])}
-                </ul>
             </div>
             """, unsafe_allow_html=True)
             
