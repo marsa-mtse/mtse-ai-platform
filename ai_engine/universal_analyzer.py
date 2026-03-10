@@ -10,6 +10,11 @@ try:
 except ImportError:
     openai = None
 
+def t(ar, en):
+    """Local translation helper for universal analyzer."""
+    import streamlit as st
+    return ar if st.session_state.get("lang") == "AR" else en
+
 def analyze_universal_link(url, depth="Deep"):
     """
     Analyzes ANY content (URL, Text, Data, Media) across ALL domains.
