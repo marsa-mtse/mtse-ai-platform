@@ -15,6 +15,8 @@ try:
 except ImportError:
     groq = None
 
+from ai_engine.classifier import classify_content
+
 def t(ar, en):
     """Local translation helper for universal analyzer."""
     import streamlit as st
@@ -76,28 +78,44 @@ def analyze_universal_link(url, depth="Deep"):
             'gemini-pro'
         ]
 
+        # Phase 10: AI Domain Detection
+        detected_domain = classify_content(url)
+        
+        industry_prompts = {
+            "Engineering": "Act as a Lead Project Engineer and Senior Estimator.",
+            "Financial": "Act as a Chief Financial Officer and Market Risk Analyst.",
+            "Legal": "Act as a Senior Legal Counsel and Regulatory Expert.",
+            "Marketing": "Act as a Global Marketing Strategist and Growth Hacker.",
+            "Admin": "Act as an Operations Director and Management Consultant.",
+            "Mixed": "Act as a Multi-Disciplinary Industrial Consultant."
+        }
+        
+        system_role = industry_prompts.get(detected_domain, "Act as a World-Class Strategic Analyst.")
+
         prompt = f"""
-        ACT AS THE WORLD'S HIGHEST-RANKED UNIVERSAL STRATEGIC ANALYST & MULTI-DOMAIN EXPERT.
-        Your mission is to perform an EXTREME DEEP DIVE on this input: {url}
+        {system_role}
+        Perform an EXTREME DEEP DIVE on this input: {url}
+        
+        Detected Industry: {detected_domain}
         
         CRITICAL REASONING GUIDELINES:
-        1. Identify the EXPLICIT DOMAIN (Politics, Economics, Social, Tech, Personality, etc.).
-        2. Conduct a 'PESTEL' or 'Porter' style analysis if applicable.
-        3. Reveal hidden patterns, psychological markers, and non-obvious correlations.
+        1. Tailor all insights to the requirements of the {detected_domain} industry.
+        2. Identify the EXPLICIT DOMAIN (Politics, Economics, Social, Tech, Personality, etc.).
+        3. Conduct a granular, technical analysis based on industry standards.
         4. Forecast the 1-year and 5-year impact of this data.
         
         REQUIRED OUTPUT SECTIONS:
         - Domain: Precise classification.
-        - Essence: A high-level philosophical and practical distillation.
-        - Deep Analysis: 5-7 paragraphs of granular, technical, and strategic findings.
-        - Strategic Matrix: A list of 4 key vectors (Variable vs Impact).
-        - Risk Assessment: Identify 3 critical vulnerabilities or threats.
+        - Essence: A high-level distillation.
+        - Deep Analysis: 5-7 paragraphs of granular finds.
+        - Strategic Matrix: 4 key vectors (Variable vs Impact).
+        - Risk Assessment: 3 critical vulnerabilities.
         - Long-term Forecast: Predicted trajectory.
-        - The Roadmap: 7 actionable, high-impact steps.
+        - The Roadmap: 7 actionable steps.
         
         Output EXACTLY a JSON where ALL keys and ALL values are in professional Arabic:
         {{
-            "domain": "المجال الدقيق",
+            "domain": "المجال الدقيق (بناءً على تصنيف {detected_domain})",
             "essence": "جوهر وفلسفة المحتوى",
             "deep_analysis": "تحليل معمق وشامل (أكثر من 500 كلمة)",
             "strategic_matrix": ["متجه 1: شرح", "متجه 2: شرح", ...],

@@ -12,6 +12,7 @@ from integrations.instagram_api import InstagramGraphAPI
 from integrations.youtube_api import YouTubeAnalyticsAPI
 from billing.plans import PlanManager
 from ai_engine.universal_analyzer import analyze_universal_link, generate_strategic_insights, get_api_status
+from ai_engine.multimodal_processor import get_processor
 
 def render():
     """Render the advanced Analytics page with Integrations."""
@@ -130,6 +131,49 @@ def render():
                 key="pdf_download_incremental"
             )
     
+    st.markdown("---")
+
+    # ==============================
+    # 🖼️ ELITE MULTI-MODAL ANALYSIS
+    # ==============================
+    render_section_header(t("التحليل الاستخباري متعدد الوسائط (AI Vision)", "Elite AI Vision & Multi-Modal Intelligence"), "🖼️")
+    
+    if not plan_manager.can_access_multimodal():
+        st.warning(t("هذه الميزة النخبوية (رؤية الحاسوب) متاحة لخطة Strategist فأعلى.", "Elite Multi-Modal Vision is for Strategist plan and higher."))
+    else:
+        st.markdown(f"""
+        <div class="glass-card animate-in" style="border-left: 4px solid #c084fc;">
+            <p style="color:#cbd5e1;">🎯 {t("ارفع صورة (مخطط هندسي، فاتورة، رسم بياني، صورة منتج) للتحليل العميق.", "Upload an image (Engineering drawing, Invoice, Chart, Product) for deep AI analysis.")}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        vision_file = st.file_uploader(t("رفع صورة للتحليل 📸", "Upload Image for AI Vision 📸"), type=["png", "jpg", "jpeg"], key="vision_upload")
+        
+        if vision_file:
+            st.image(vision_file, width=400)
+            vision_prompt = st.text_area(t("ماذا تريد أن تعرف عن هذه الصورة؟", "What do you want to know about this image?"), 
+                                        placeholder=t("مثلاً: استخرج البنود والكميات، أو حلل جودة التصميم...", "e.g. Extract items & quantities, or analyze design quality..."))
+            
+            if st.button(t("🚀 تحليل الصورة استخباراتياً", "🚀 Analyze Image with AI Vision"), use_container_width=True):
+                with st.spinner(t("جاري تشغيل محرك الرؤية العالمي للـ MTSE...", "Running MTSE Global Vision Engine...")):
+                    processor = get_processor()
+                    vision_res = processor.process_image(vision_file.getvalue(), prompt=vision_prompt if vision_prompt else "Analyze this image in extreme detail for business and technical insights.")
+                    st.session_state.vision_analysis = vision_res
+                    st.success(t("✅ تم استخراج الرؤى البصرية!", "✅ Vision insights extracted!"))
+
+        if st.session_state.get("vision_analysis"):
+            st.markdown(f"""
+            <div class="glass-card" style="border-top: 4px solid #c084fc; padding: 25px;">
+                <h4 style="color:#c084fc;">🧠 {t('نتائج تحليل الرؤية:', 'AI Vision Results:')}</h4>
+                <div style="line-height:1.7; color:#f8fafc;">
+                    {st.session_state.vision_analysis}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button(t("🗑️ مسح النتائج", "🗑️ Clear Vision Results")):
+                st.session_state.vision_analysis = None
+                st.rerun()
+
     st.markdown("---")
 
     # ==============================

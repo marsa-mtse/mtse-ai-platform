@@ -2,6 +2,9 @@
 # MTSE Marketing Engine - Feature Flag System (Plans)
 # ==========================================================
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import PLAN_LIMITS
 
 class PlanManager:
@@ -44,6 +47,10 @@ class PlanManager:
     def can_access_white_label(self):
         """Command only."""
         return self.plan == "Command"
+
+    def can_access_multimodal(self):
+        """Strategist and Command."""
+        return self.plan in ["Strategist", "Command"]
 
     def get_features_list(self):
         """Return a dictionary of feature flags for the current plan."""

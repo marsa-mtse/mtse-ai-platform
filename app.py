@@ -30,6 +30,8 @@ from views import users_page
 from views import billing_page
 from views import settings_page
 from views import expert_tools_page
+from views import cost_engine_page
+from views import social_analysis_page
 
 # ==============================
 # INIT
@@ -161,6 +163,8 @@ with st.sidebar:
         ("Expert Tools", "🛠️", t("أدوات النخبة", "Expert Tools")),
         ("AI Engine", "🤖", t("محرك AI", "AI Engine")),
         ("Reports", "📁", t("التقارير", "Reports")),
+        ("Cost Engine", "💰", t("محرك التكاليف", "Cost Engine")),
+        ("Social Sniper", "🎯", t("قناص السوشيال", "Social Sniper")),
         ("Users", "👥", t("المستخدمين", "Users")),
         ("Billing", "💳", t("الفوترة", "Billing")),
         ("Settings", "⚙️", t("الإعدادات", "Settings")),
@@ -202,6 +206,8 @@ page_map = {
     "Expert Tools": expert_tools_page,
     "AI Engine": ai_engine_page,
     "Reports": reports_page,
+    "Cost Engine": cost_engine_page,
+    "Social Sniper": social_analysis_page,
     "Users": users_page,
     "Billing": billing_page,
     "Settings": settings_page,
