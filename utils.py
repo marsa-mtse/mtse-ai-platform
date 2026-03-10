@@ -67,23 +67,31 @@ def generate_branded_pdf(report_data, lang="Both"):
         class BrandedPDF(FPDF):
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
-                # Register Unicode Fonts for Arabic
-                font_reg = 'assets/fonts/Amiri-Regular.ttf'
-                font_bold = 'assets/fonts/Amiri-Bold.ttf'
+                # Register Unicode Fonts for Arabic using absolute paths
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                font_reg = os.path.join(base_dir, 'assets', 'fonts', 'Amiri-Regular.ttf')
+                font_bold = os.path.join(base_dir, 'assets', 'fonts', 'Amiri-Bold.ttf')
+                
+                self.main_font = 'Helvetica'
+                self.bold_font = 'Helvetica'
+                
                 if os.path.exists(font_reg):
-                    self.add_font('Amiri', '', font_reg, uni=True)
-                    self.main_font = 'Amiri'
-                else:
-                    self.main_font = 'Helvetica'
+                    try:
+                        self.add_font('Amiri', '', font_reg)
+                        self.main_font = 'Amiri'
+                    except Exception as e:
+                        st.warning(f"Regular font registration error: {e}")
                 
                 if os.path.exists(font_bold):
-                    self.add_font('Amiri', 'B', font_bold, uni=True)
-                    self.bold_font = 'Amiri'
-                else:
-                    self.bold_font = 'Helvetica'
+                    try:
+                        self.add_font('Amiri', 'B', font_bold)
+                        self.bold_font = 'Amiri'
+                    except Exception as e:
+                        st.warning(f"Bold font registration error: {e}")
 
             def header(self):
-                logo_path = 'assets/logo_premium.png'
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                logo_path = os.path.join(base_dir, 'assets', 'logo_premium.png')
                 if os.path.exists(logo_path):
                     try:
                         self.image(logo_path, 10, 8, 30)
