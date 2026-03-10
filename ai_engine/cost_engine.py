@@ -21,8 +21,14 @@ except ImportError:
 def _parse_json_list(txt):
     """Helper to robustly extract a JSON list from AI text."""
     txt = txt.replace("```json", "").replace("```", "").strip()
+    # Try to find a list first
     start = txt.find("[")
     end = txt.rfind("]")
+    if start != -1 and end != -1:
+        return json.loads(txt[start:end+1])
+    # Try to find an object
+    start = txt.find("{")
+    end = txt.rfind("}")
     if start != -1 and end != -1:
         return json.loads(txt[start:end+1])
     return json.loads(txt)
@@ -31,7 +37,7 @@ def _parse_json_list(txt):
 class CostEngine:
     """
     Handles BOQ extraction and complex project cost estimation.
-    Tries Groq first (reliable), then Gemini as fallback.
+    Tries Groq first (reliable for this user), then Gemini as fallback.
     """
     def __init__(self):
         google_key = st.secrets.get("GOOGLE_API_KEY")
@@ -40,13 +46,23 @@ class CostEngine:
 
     def normalize_boq_data(self, data):
         """Normalizes keys from AI output (handles Arabic/English/vague keys)."""
+        # If input is a dict (Groq wraps lists in objects), unwrap it first
+        if isinstance(data, dict):
+            for key in ["items", "boq", "line_items", "data", "بنود", "المقايسة", "list"]:
+                if key in data and isinstance(data[key], list):
+                    data = data[key]
+                    break
+            else:
+                # If still a dict, can't normalize
+                return [{"error": f"شكل البيانات غير متوقع: {list(data.keys())}"}]
+
         if not isinstance(data, list):
-            return data
+            return [{"error": f"البيانات المُعادة ليست قائمة: {type(data)}"}]
 
         mapping = {
-            "item": ["item", "البند", "بند", "الوصف", "description", "name", "الاسم"],
-            "unit": ["unit", "الوحدة", "وحدة", "measurement"],
-            "quantity": ["quantity", "الكمية", "كمية", "qty", "count", "العدد"]
+            "item": ["item", "البند", "بند", "الوصف", "description", "name", "الاسم", "وصف_البند", "item_description"],
+            "unit": ["unit", "الوحدة", "وحدة", "measurement", "وحدة_القياس"],
+            "quantity": ["quantity", "الكمية", "كمية", "qty", "count", "العدد", "الكميه"]
         }
 
         normalized = []
@@ -75,57 +91,63 @@ class CostEngine:
                 new_entry["quantity"] = 0.0
 
             normalized.append(new_entry)
+
+        if not normalized:
+            return [{"error": "لم يتم العثور على بنود في الاستجابة. حاول مرة أخرى أو تحقق من البيانات."}]
         return normalized
 
     def _call_groq(self, prompt_text):
-        """Call Groq API for text-only BOQ extraction."""
+        """Call Groq API for text BOQ extraction. Returns raw parsed data or None."""
         groq_key = st.secrets.get("GROQ_API_KEY")
-        if not groq_key or not groq_lib:
-            return None
+        if not groq_key:
+            return None, "لا يوجد GROQ_API_KEY"
+        if not groq_lib:
+            return None, "مكتبة groq غير مثبتة"
 
+        last_err = "Unknown"
         try:
             client = groq_lib.Groq(api_key=groq_key.strip())
-            for model_name in ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "mixtral-8x7b-32768"]:
+            for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"]:
                 try:
                     response = client.chat.completions.create(
                         model=model_name,
                         messages=[{"role": "user", "content": prompt_text}],
-                        response_format={"type": "json_object"}
+                        max_tokens=4096,
+                        temperature=0.1,
                     )
-                    raw = json.loads(response.choices[0].message.content)
-                    # Handle Groq wrapping the list in a dict key
-                    if isinstance(raw, list):
-                        return raw
-                    for key in ["items", "boq", "line_items", "data", "بنود", "المقايسة"]:
-                        if key in raw and isinstance(raw[key], list):
-                            return raw[key]
-                    return raw
+                    raw_text = response.choices[0].message.content
+                    parsed = _parse_json_list(raw_text)
+                    return parsed, None
                 except Exception as e:
-                    if "429" in str(e) or "decommissioned" in str(e):
+                    last_err = str(e)
+                    if "429" in last_err or "decommissioned" in last_err or "model" in last_err.lower():
                         continue
-                    raise e
-        except Exception:
-            return None
-        return None
+                    break
+        except Exception as e:
+            return None, f"Groq error: {str(e)}"
+        return None, f"Groq فشل في كل النماذج: {last_err}"
 
     def _call_gemini_text(self, prompt_text):
-        """Call Gemini API for text-only BOQ extraction."""
+        """Call Gemini API for text BOQ extraction."""
         if not genai:
-            return None
+            return None, "google-generativeai غير مثبتة"
         google_key = st.secrets.get("GOOGLE_API_KEY")
         if not google_key:
-            return None
+            return None, "لا يوجد GOOGLE_API_KEY"
 
+        last_err = "Unknown"
         for model_name in ["gemini-2.0-flash", "gemini-1.5-flash"]:
             try:
                 model = genai.GenerativeModel(model_name)
                 response = model.generate_content(prompt_text)
-                return _parse_json_list(response.text)
+                parsed = _parse_json_list(response.text)
+                return parsed, None
             except Exception as e:
-                if "404" in str(e) or "429" in str(e):
+                last_err = str(e)
+                if "404" in last_err or "429" in last_err:
                     continue
                 break
-        return None
+        return None, f"Gemini فشل: {last_err}"
 
     def extract_boq_items(self, content):
         """Extracts BOQ items from pasted text — tries Groq first, then Gemini."""
@@ -135,35 +157,54 @@ Extract all line items from this Bill of Quantities (BOQ) text.
 Content:
 {content[:5000]}
 
-IMPORTANT: Output ONLY a JSON object with key "items" containing a list.
-Each item must have EXACTLY these keys: "item", "unit", "quantity".
-Example: {{"items": [{{"item": "Concrete", "unit": "m3", "quantity": 50.0}}]}}
+Return a JSON array of objects. Each object must have:
+- "item": string (item/work description)
+- "unit": string (unit of measurement: m2, m3, kg, etc.)  
+- "quantity": number
+
+Example output:
+[
+  {{"item": "Concrete C25", "unit": "m3", "quantity": 50.5}},
+  {{"item": "Reinforcement steel", "unit": "ton", "quantity": 3.2}}
+]
+
+Return ONLY the JSON array, no other text.
 """
-        # 1. Try Groq first (working for this user)
-        result = self._call_groq(prompt)
-        if result and isinstance(result, list) and len(result) > 0:
-            return self.normalize_boq_data(result)
+        errors = []
+
+        # 1. Try Groq first
+        result, err = self._call_groq(prompt)
+        if result is not None:
+            normalized = self.normalize_boq_data(result)
+            if normalized and "error" not in normalized[0]:
+                return normalized
+            errors.append(f"Groq normalization: {normalized[0].get('error', '')}")
+        else:
+            errors.append(f"Groq: {err}")
 
         # 2. Try Gemini as fallback
-        result = self._call_gemini_text(prompt)
-        if result and isinstance(result, list) and len(result) > 0:
-            return self.normalize_boq_data(result)
+        result, err = self._call_gemini_text(prompt)
+        if result is not None:
+            normalized = self.normalize_boq_data(result)
+            if normalized and "error" not in normalized[0]:
+                return normalized
+            errors.append(f"Gemini normalization: {normalized[0].get('error', '')}")
+        else:
+            errors.append(f"Gemini: {err}")
 
-        return [{"error": "فشل الاستخراج. تأكد من مفاتيح GROQ_API_KEY أو GOOGLE_API_KEY في الإعدادات."}]
+        return [{"error": " | ".join(errors)}]
 
     def extract_boq_from_file(self, file_bytes, file_type):
-        """Extracts BOQ from uploaded files using Gemini multimodal (PDF/Image).
-        Note: Groq is text-only, so files require Gemini.
-        """
+        """Extracts BOQ from uploaded files using Gemini multimodal (PDF/Image)."""
         google_key = st.secrets.get("GOOGLE_API_KEY")
 
         if not google_key or not genai:
-            return [{"error": "رفع الملفات يتطلب مفتاح GOOGLE_API_KEY مع دعم Gemini. الرجاء لصق محتوى الملف في حقل النص."}]
+            return [{"error": "رفع الملفات يتطلب GOOGLE_API_KEY. الرجاء لصق محتوى الملف في حقل النص."}]
 
         import io
         prompt = """You are a Professional Quantity Surveyor.
 Analyze this document and extract all BOQ line items.
-Output ONLY a JSON list: [{"item": "...", "unit": "...", "quantity": 0.0}]
+Return ONLY a JSON array: [{"item": "...", "unit": "...", "quantity": 0.0}]
 """
         if "pdf" in file_type.lower():
             content_parts = [prompt, {"mime_type": "application/pdf", "data": file_bytes}]
@@ -176,6 +217,7 @@ Output ONLY a JSON list: [{"item": "...", "unit": "...", "quantity": 0.0}]
         else:
             content_parts = [prompt, {"mime_type": file_type, "data": file_bytes}]
 
+        last_err = "Unknown"
         for model_name in ["gemini-2.0-flash", "gemini-1.5-flash"]:
             try:
                 model = genai.GenerativeModel(model_name)
@@ -183,11 +225,12 @@ Output ONLY a JSON list: [{"item": "...", "unit": "...", "quantity": 0.0}]
                 raw = _parse_json_list(response.text)
                 return self.normalize_boq_data(raw)
             except Exception as e:
-                if "404" in str(e) or "429" in str(e):
+                last_err = str(e)
+                if "404" in last_err or "429" in last_err:
                     continue
                 break
 
-        return [{"error": "رفع الملف لا يعمل مع مفتاح Gemini الحالي. الرجاء نسخ محتوى المقايسة ولصقه في حقل النص."}]
+        return [{"error": f"فشل رفع الملف: {last_err}. الرجاء لصق النص يدوياً."}]
 
     def calculate_cost_matrix(self, items, base_prices, overhead=0.15, waste=0.05, profit=0.20):
         """Calculates full cost matrix with overhead, waste, and profit scenarios."""
@@ -195,8 +238,8 @@ Output ONLY a JSON list: [{"item": "...", "unit": "...", "quantity": 0.0}]
         total_direct = 0
 
         for i, item in enumerate(items):
-            qty = item.get("quantity", 0)
-            base_price = base_prices.get(str(i), 0)
+            qty = float(item.get("quantity", 0) or 0)
+            base_price = float(base_prices.get(str(i), 0) or 0)
 
             direct_cost = qty * base_price
             total_direct += direct_cost

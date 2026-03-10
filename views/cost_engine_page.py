@@ -20,9 +20,9 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    if not plan_manager.can_access_multimodal(): # Placeholder flag for Cost Engine
-        st.warning(t("هذه الميزة الهندسية والمالية متاحة لخطة Strategist فأعلى.", "This Engineering/Financial tool is for Strategist plan and higher."))
-        return
+    # Show a warning for lower plans but don't block entirely
+    if not plan_manager.can_access_multimodal():
+        st.info(t("💡 تلميح: ترقية خطتك تتيح معالجة ملفات PDF والصور مباشرة.", "💡 Tip: Upgrade your plan to enable direct PDF/Image processing."))
 
     # --- ARCHIVE/FILE SELECTION ---
     col1, col2 = st.columns([2, 1])
@@ -35,14 +35,20 @@ def render():
         engine = get_cost_engine()
         with st.spinner(t("جاري معالجة البيانات واستخراج الجداول...", "Processing data and extracting tables...")):
             if boq_file:
-                # Handle file upload
                 file_bytes = boq_file.getvalue()
-                st.session_state.boq_items = engine.extract_boq_from_file(file_bytes, boq_file.type)
-                st.success(t("✅ تم استخراج البنود من الملف بنجاح!", "✅ Items extracted from file successfully!"))
+                result = engine.extract_boq_from_file(file_bytes, boq_file.type)
+                st.session_state.boq_items = result
+                if result and "error" not in result[0]:
+                    st.success(t("✅ تم استخراج البنود من الملف بنجاح!", "✅ Items extracted from file successfully!"))
+                else:
+                    st.error(f"❌ {result[0].get('error', 'خطأ غير معروف')}")
             elif boq_input:
-                # Handle text input
-                st.session_state.boq_items = engine.extract_boq_items(boq_input)
-                st.success(t("✅ تم استخراج البنود من النص بنجاح!", "✅ Items extracted from text successfully!"))
+                result = engine.extract_boq_items(boq_input)
+                st.session_state.boq_items = result
+                if result and "error" not in result[0]:
+                    st.success(t("✅ تم استخراج البنود بنجاح!", "✅ Items extracted successfully!"))
+                else:
+                    st.error(f"❌ {result[0].get('error', 'خطأ غير معروف')}")
             else:
                 st.warning(t("⚠️ يرجى إدخال نص المقايسة أو رفع ملف أولاً.", "⚠️ Please enter BOQ text or upload a file first."))
 
