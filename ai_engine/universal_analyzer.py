@@ -20,6 +20,30 @@ def t(ar, en):
     import streamlit as st
     return ar if st.session_state.get("lang") == "AR" else en
 
+def format_expert_content(data):
+    """
+    Recursively formats complex AI response structures (dicts/lists) 
+    into a world-class, human-readable string.
+    """
+    if isinstance(data, str):
+        return data
+    if isinstance(data, list):
+        items = []
+        for i in data:
+            formatted = format_expert_content(i)
+            items.append(f"• {formatted}")
+        return "\n".join(items)
+    if isinstance(data, dict):
+        lines = []
+        for k, v in data.items():
+            key_label = k.replace("_", " ").title()
+            if isinstance(v, (dict, list)):
+                lines.append(f"**{key_label}:**\n{format_expert_content(v)}")
+            else:
+                lines.append(f"**{key_label}:** {v}")
+        return "\n".join(lines)
+    return str(data)
+
 def get_api_status():
     """Returns the status of AI backends."""
     google_key = st.secrets.get("GOOGLE_API_KEY")
@@ -71,7 +95,7 @@ def analyze_universal_link(url, depth="Deep"):
         - Long-term Forecast: Predicted trajectory.
         - The Roadmap: 7 actionable, high-impact steps.
         
-        Output EXACTLY a JSON in professional Arabic:
+        Output EXACTLY a JSON where ALL keys and ALL values are in professional Arabic:
         {{
             "domain": "المجال الدقيق",
             "essence": "جوهر وفلسفة المحتوى",
@@ -102,7 +126,7 @@ def analyze_universal_link(url, depth="Deep"):
     if openai_key and openai:
         try:
             client = openai.OpenAI(api_key=openai_key)
-            prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
+            prompt = f"Elite Universal Intelligence Analysis (10x Depth) for: {url}. YOU MUST OUTPUT THE CONTENT ENTIRELY IN ARABIC. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
@@ -121,7 +145,7 @@ def analyze_universal_link(url, depth="Deep"):
         else:
             try:
                 client = groq.Groq(api_key=groq_key.strip())
-                prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
+                prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list). IMPORTANT: ALL CONTENT MUST BE IN ARABIC."
                 
                 # Model rotation for Groq
                 for groq_model in ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "mixtral-8x7b-32768"]:
@@ -165,45 +189,42 @@ def generate_strategic_insights(analysis_data, lang="Both"):
     ess = analysis_data.get("essence", "")
     sections.append({
         "heading": f"1. {t('مجال الاستخبارات وجوهر الرؤية', 'Intelligence Domain & Vision Essence')}",
-        "content": f"{t('المجال النخبوي:', 'Elite Domain:')} {dom}\n\n{ess}"
+        "content": f"{t('المجال النخبوي:', 'Elite Domain:')} {format_expert_content(dom)}\n\n{format_expert_content(ess)}"
     })
     
     # 2. Deep Analysis (The Core)
     analysis = analysis_data.get("deep_analysis", "")
     sections.append({
         "heading": f"2. {t('التحليل الاستراتيجي المعمق (10x Depth)', 'Elite Strategic Deep Dive')}",
-        "content": analysis
+        "content": format_expert_content(analysis)
     })
     
     # 3. Strategic Matrix
     matrix = analysis_data.get("strategic_matrix", [])
-    matrix_str = "\n".join([f"◈ {m}" for m in matrix]) if isinstance(matrix, list) else matrix
     sections.append({
         "heading": f"3. {t('مصفوفة المتجهات الاستراتيجية', 'Strategic Vector Matrix')}",
-        "content": matrix_str
+        "content": format_expert_content(matrix)
     })
 
     # 4. Risk Assessment
     risks = analysis_data.get("risk_assessment", [])
-    risks_str = "\n".join([f"⚠ {r}" for r in risks]) if isinstance(risks, list) else risks
     sections.append({
         "heading": f"4. {t('تقييم المخاطر والتهديدات النخبوية', 'Elite Risk & Threat Assessment')}",
-        "content": risks_str
+        "content": format_expert_content(risks)
     })
 
     # 5. Long-term Forecast
     forecast = analysis_data.get("forecast", "")
     sections.append({
         "heading": f"5. {t('التوقعات والمسار المستقبلي بعيد المدى', 'Long-term Strategic Forecast')}",
-        "content": forecast
+        "content": format_expert_content(forecast)
     })
 
     # 6. Elite Roadmap
     roadmap = analysis_data.get("roadmap", [])
-    roadmap_str = "\n".join([f"➤ {r}" for r in roadmap]) if isinstance(roadmap, list) else roadmap
     sections.append({
         "heading": f"6. {t('خارطة الطريق التنفيذية العالمية', 'Universal Executive Roadmap')}",
-        "content": roadmap_str
+        "content": format_expert_content(roadmap)
     })
     
     return {
