@@ -91,13 +91,13 @@ def analyze_universal_link(url, depth="Deep"):
             pass
 
     # 3. --- STRATEGIC SAFETY ENGINE ---
-    return {{
+    return {
         "domain": "تحليل عام وموحد",
         "essence": "جاري معالجة المحتوى عبر المحرك الاحتياطي.",
         "insights": ["رصد أولي للبيانات.", "تحليل متقدم للأنماط."],
         "impact": "تأثير إيجابي طويل المدى.",
         "roadmap": ["مراقبة التطورات.", "اتخاذ قرارات بناءً على البيانات."]
-    }}
+    }
 
 def generate_strategic_insights(analysis_data, lang="Both"):
     """
