@@ -126,24 +126,32 @@ def render():
             calc = st.session_state.cost_calculation
             res_df = pd.DataFrame(calc["items"])
             
+            # --- CURRENCY SETTINGS ---
+            st.markdown(t("### 💱 إعدادات العملة", "### 💱 Currency Settings"))
+            usd_to_egp = st.number_input(t("سعر صرف الدولار مقابل الجنيه (للعرض والتحويل)", "USD to EGP Exchange Rate"), value=50.0, step=1.0)
+
             # --- SUMMARY CARDS ---
             st.markdown(f"""
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
                 <div class="glass-card" style="border-top: 4px solid #6366f1;">
                     <small>{t("إجمالي التكلفة المباشرة", "Total Direct Cost")}</small>
-                    <h3>{calc['summary']['total_direct']:,.2f}</h3>
+                    <h3>${calc['summary']['total_direct']:,.2f}</h3>
+                    <p style="color:#94a3b8; font-size:0.9em;">EGP {(calc['summary']['total_direct'] * usd_to_egp):,.2f}</p>
                 </div>
                 <div class="glass-card" style="border-top: 4px solid #f59e0b;">
                     <small>{t("إجمالي شامل الهالك", "Total with Waste")}</small>
-                    <h3>{calc['summary']['total_with_waste']:,.2f}</h3>
+                    <h3>${calc['summary']['total_with_waste']:,.2f}</h3>
+                    <p style="color:#94a3b8; font-size:0.9em;">EGP {(calc['summary']['total_with_waste'] * usd_to_egp):,.2f}</p>
                 </div>
                 <div class="glass-card" style="border-top: 4px solid #10b981;">
                     <small>{t("السعر النهائي للمشروع", "Final Project Price")}</small>
-                    <h2 style="color:#10b981;">{calc['summary']['total_grand']:,.2f}</h2>
+                    <h2 style="color:#10b981;">${calc['summary']['total_grand']:,.2f}</h2>
+                    <p style="color:#10b981; font-size:0.9em;">EGP {(calc['summary']['total_grand'] * usd_to_egp):,.2f}</p>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
+            # Show the detailed dataframe
             st.dataframe(res_df, use_container_width=True)
             
             # --- PIE CHART ---
@@ -162,29 +170,43 @@ def render():
                 pass
 
             # --- EXCEL EXPORT ---
+            import io
             st.markdown(f"### 📥 {t('تصدير التقرير', 'Export Report')}")
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                # Sheet 1: Detailed items
-                export_df = res_df.rename(columns={
+                # Add EGP columns to export
+                export_df = res_df.copy()
+                export_df['base_price_egp'] = export_df['base_price'] * usd_to_egp
+                export_df['direct_total_egp'] = export_df['direct_total'] * usd_to_egp
+                export_df['final_price_egp'] = export_df['final_price'] * usd_to_egp
+
+                export_df = export_df.rename(columns={
                     'item': t('البند', 'Item'), 'qty': t('الكمية', 'Qty'),
-                    'unit': t('الوحدة', 'Unit'), 'base_price': t('سعر الوحدة', 'Unit Price'),
-                    'direct_total': t('التكلفة المباشرة', 'Direct Cost'),
-                    'with_waste': t('شامل الهالك', 'With Waste'),
-                    'with_overhead': t('شامل الغير مباشر', 'With Overhead'),
-                    'final_price': t('السعر النهائي', 'Final Price')
+                    'unit': t('الوحدة', 'Unit'), 
+                    'base_price': t('سعر الوحدة (USD)', 'Unit Price (USD)'),
+                    'base_price_egp': t('سعر الوحدة (EGP)', 'Unit Price (EGP)'),
+                    'direct_total': t('التكلفة المباشرة (USD)', 'Direct Cost (USD)'),
+                    'direct_total_egp': t('التكلفة المباشرة (EGP)', 'Direct Cost (EGP)'),
+                    'with_waste': t('شامل الهالك (USD)', 'With Waste (USD)'),
+                    'with_overhead': t('شامل الغير مباشر (USD)', 'With Overhead (USD)'),
+                    'final_price': t('السعر النهائي (USD)', 'Final Price (USD)'),
+                    'final_price_egp': t('السعر النهائي (EGP)', 'Final Price (EGP)')
                 })
                 export_df.to_excel(writer, sheet_name=t('تفاصيل البنود', 'Item Details'), index=False)
+                
                 # Sheet 2: Summary
                 summary_df = pd.DataFrame([{
                     t('البيان', 'Description'): t('التكلفة المباشرة الإجمالية', 'Total Direct Cost'),
-                    t('القيمة', 'Value'): calc['summary']['total_direct']
+                    t('USD', 'USD'): calc['summary']['total_direct'],
+                    t('EGP', 'EGP'): calc['summary']['total_direct'] * usd_to_egp
                 }, {
                     t('البيان', 'Description'): t('إجمالي شامل الهالك', 'Total with Waste'),
-                    t('القيمة', 'Value'): calc['summary']['total_with_waste']
+                    t('USD', 'USD'): calc['summary']['total_with_waste'],
+                    t('EGP', 'EGP'): calc['summary']['total_with_waste'] * usd_to_egp
                 }, {
                     t('البيان', 'Description'): t('السعر النهائي للمشروع', 'Final Project Price'),
-                    t('القيمة', 'Value'): calc['summary']['total_grand']
+                    t('USD', 'USD'): calc['summary']['total_grand'],
+                    t('EGP', 'EGP'): calc['summary']['total_grand'] * usd_to_egp
                 }])
                 summary_df.to_excel(writer, sheet_name=t('الملخص', 'Summary'), index=False)
 
@@ -197,10 +219,10 @@ def render():
             )
 
             st.info(f"💡 **{t('تحليل المخاطر:', 'Risk Insight:')}** " + 
-                    t("بناءً على التضخم الحالي، يفضل إضافة نسبة 5% إضافية كمخزون للطوارئ.", 
-                      "Based on current inflation, adding a 5% contingency buffer is recommended."))
+                    t("الأسعار المقترحة تقريبية لتسهيل العمل فقط. يُفضل التأكد من موردين معتمدين قبل تقديم العرض النهائي للعميل.", 
+                      "Suggested AI prices are estimates. Always verify with official suppliers before submitting final bids."))
 
-            if st.button(t("🗑️ تصفير البيانات", "🗑️ Reset Data")):
+            if st.button(t("🗑️ تصفير البيانات", "🗑️ Reset Data"), key="reset_data"):
                 st.session_state.boq_items = None
                 st.session_state.cost_calculation = None
                 st.session_state.market_prices = None
