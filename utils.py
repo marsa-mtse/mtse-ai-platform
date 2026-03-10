@@ -17,14 +17,30 @@ def t(ar, en):
 # ==============================
 
 def get_pdf_engine():
-    """Safely load PDF libraries to prevent startup crashes."""
+    """Safely load PDF libraries and report errors."""
+    missing = []
+    FPDF, reshaper, bidi = None, None, None
+    
     try:
         from fpdf import FPDF
-        import arabic_reshaper
-        from bidi.algorithm import get_display
-        return FPDF, arabic_reshaper, get_display
     except ImportError:
+        missing.append("fpdf2")
+    
+    try:
+        import arabic_reshaper as reshaper
+    except ImportError:
+        missing.append("arabic-reshaper")
+        
+    try:
+        from bidi.algorithm import get_display as bidi
+    except ImportError:
+        missing.append("python-bidi")
+    
+    if missing:
+        st.error(f"⚠️ Missing libraries for PDF: {', '.join(missing)}")
         return None, None, None
+        
+    return FPDF, reshaper, bidi
 
 def format_arabic(text):
     """Reshape Arabic text for PDF rendering."""
@@ -34,13 +50,15 @@ def format_arabic(text):
     try:
         reshaped = reshaper.reshape(text)
         return bidi(reshaped)
-    except Exception:
+    except Exception as e:
+        st.warning(f"Arabic Formatting Error: {e}")
         return text
 
 def generate_branded_pdf(report_data, lang="Both"):
     """
-    Generates a professional PDF with branding and Arabic support.
+    Generates a professional PDF with branding.
     """
+    import os
     FPDF, _, _ = get_pdf_engine()
     if not FPDF:
         return None
@@ -48,11 +66,16 @@ def generate_branded_pdf(report_data, lang="Both"):
     try:
         class BrandedPDF(FPDF):
             def header(self):
-                try:
-                    self.image('assets/logo_premium.png', 10, 8, 30)
-                except:
+                logo_path = 'assets/logo_premium.png'
+                if os.path.exists(logo_path):
+                    try:
+                        self.image(logo_path, 10, 8, 30)
+                    except Exception as e:
+                        st.warning(f"Logo print error: {e}")
+                else:
                     self.set_font('Helvetica', 'B', 15)
                     self.cell(0, 10, 'MTSE AI Platform', 0, 0, 'L')
+                
                 self.ln(20)
                 self.set_draw_color(26, 115, 232)
                 self.line(10, 32, 200, 32)
@@ -87,6 +110,7 @@ def generate_branded_pdf(report_data, lang="Both"):
 
         return pdf.output()
     except Exception as e:
+        st.error(f"Critical PDF Runtime Error: {e}")
         return None
 
 
