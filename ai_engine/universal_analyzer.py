@@ -15,6 +15,15 @@ def t(ar, en):
     import streamlit as st
     return ar if st.session_state.get("lang") == "AR" else en
 
+def get_api_status():
+    """Returns the status of AI backends."""
+    google_key = st.secrets.get("GOOGLE_API_KEY")
+    openai_key = st.secrets.get("OPENAI_API_KEY")
+    return {
+        "google": bool(google_key and genai),
+        "openai": bool(openai_key and openai)
+    }
+
 def analyze_universal_link(url, depth="Deep"):
     """
     ELITE OMNI-INTELLIGENCE ENGINE.
@@ -75,6 +84,7 @@ def analyze_universal_link(url, depth="Deep"):
                 if start != -1 and end != -1:
                     return json.loads(txt[start:end+1])
             except Exception as e:
+                st.session_state.last_ai_error = f"Gemini ({model_name}): {str(e)}"
                 err = str(e)
                 if "429" in err or "404" in err or "Quota" in err: continue
                 else: break
@@ -90,10 +100,14 @@ def analyze_universal_link(url, depth="Deep"):
                 response_format={ "type": "json_object" }
             )
             return json.loads(response.choices[0].message.content)
-        except:
+        except Exception as e:
+            st.session_state.last_ai_error = f"OpenAI: {str(e)}"
             pass
 
     # 3. --- ELITE SAFETY ENGINE ---
+    if not google_key and not openai_key:
+        st.session_state.last_ai_error = "Missing API Keys: Please set GOOGLE_API_KEY or OPENAI_API_KEY in secrets."
+
     return {
         "domain": "الاستخبارات الرقمية العامة",
         "essence": "تحليل أولي عبر المحرك الاحتياطي العميق.",

@@ -11,7 +11,7 @@ from integrations.tiktok_api import TikTokAdsAPI
 from integrations.instagram_api import InstagramGraphAPI
 from integrations.youtube_api import YouTubeAnalyticsAPI
 from billing.plans import PlanManager
-from ai_engine.universal_analyzer import analyze_universal_link, generate_strategic_insights
+from ai_engine.universal_analyzer import analyze_universal_link, generate_strategic_insights, get_api_status
 
 def render():
     """Render the advanced Analytics page with Integrations."""
@@ -23,6 +23,16 @@ def render():
     # ==============================
     render_section_header(t("التحليل العالمي العميق", "Universal Deep Analysis"), "🔗")
     
+    # --- API STATUS CENTER ---
+    status = get_api_status()
+    with st.expander(t("📡 حالة الإتصال بالمحركات الاستخباراتية", "📡 Intelligence Engine Connectivity"), expanded=False):
+        c1, c2 = st.columns(2)
+        c1.write(f"Gemini AI: {'✅ ' + t('متصل', 'Connected') if status['google'] else '❌ ' + t('غير متصل', 'Disconnected')}")
+        c2.write(f"OpenAI GPT: {'✅ ' + t('متصل', 'Connected') if status['openai'] else '❌ ' + t('غير متصل', 'Disconnected')}")
+        
+        if st.session_state.get("last_ai_error"):
+            st.error(f"⚠️ {t('آخر خطأ تقني:', 'Last Technical Error:')} {st.session_state.last_ai_error}")
+
     st.markdown(f"""
     <div class="glass-card animate-in">
         <p style="color:#94a3b8; font-size:1rem;">
