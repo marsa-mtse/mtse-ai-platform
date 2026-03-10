@@ -43,12 +43,12 @@ def analyze_universal_link(url, depth="Deep"):
     if google_key and genai:
         genai.configure(api_key=google_key.strip())
         model_candidates = [
+            'gemini-2.0-flash',
             'gemini-1.5-flash-latest', 
             'gemini-1.5-flash-002',
             'gemini-1.5-flash', 
             'gemini-1.5-pro-latest',
             'gemini-2.0-flash-exp',
-            'gemini-2.0-flash',
             'gemini-pro'
         ]
 
@@ -115,19 +115,22 @@ def analyze_universal_link(url, depth="Deep"):
 
     # 3. --- GROQ ELITE BACKUP (LLAMA-3 FREE) ---
     groq_key = st.secrets.get("GROQ_API_KEY")
-    if groq_key and groq:
-        try:
-            client = groq.Groq(api_key=groq_key)
-            prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
-            response = client.chat.completions.create(
-                model="llama3-70b-8192",
-                messages=[{"role": "user", "content": prompt}],
-                response_format={ "type": "json_object" }
-            )
-            return json.loads(response.choices[0].message.content)
-        except Exception as e:
-            st.session_state.last_ai_error = f"Groq (Llama-3): {str(e)}"
-            pass
+    if groq_key:
+        if not groq:
+            st.session_state.last_ai_error = "Groq library not installed. Please wait for the server to update requirements.txt."
+        else:
+            try:
+                client = groq.Groq(api_key=groq_key.strip())
+                prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
+                response = client.chat.completions.create(
+                    model="llama3-70b-8192",
+                    messages=[{"role": "user", "content": prompt}],
+                    response_format={ "type": "json_object" }
+                )
+                return json.loads(response.choices[0].message.content)
+            except Exception as e:
+                st.session_state.last_ai_error = f"Groq (Llama-3): {str(e)}"
+                pass
 
     # 4. --- ELITE SAFETY ENGINE ---
     if not any([google_key, openai_key, groq_key]):
