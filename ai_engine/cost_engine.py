@@ -194,43 +194,60 @@ Return ONLY the JSON array, no other text.
 
         return [{"error": " | ".join(errors)}]
 
-    def extract_boq_from_file(self, file_bytes, file_type):
-        """Extracts BOQ from uploaded files using Gemini multimodal (PDF/Image)."""
-        google_key = st.secrets.get("GOOGLE_API_KEY")
-
-        if not google_key or not genai:
-            return [{"error": "رفع الملفات يتطلب GOOGLE_API_KEY. الرجاء لصق محتوى الملف في حقل النص."}]
-
+    def _file_to_text(self, file_bytes, file_type):
+        """Convert uploaded file to plain text for Groq processing."""
         import io
-        prompt = """You are a Professional Quantity Surveyor.
-Analyze this document and extract all BOQ line items.
-Return ONLY a JSON array: [{"item": "...", "unit": "...", "quantity": 0.0}]
-"""
-        if "pdf" in file_type.lower():
-            content_parts = [prompt, {"mime_type": "application/pdf", "data": file_bytes}]
-        elif "excel" in file_type.lower() or "spreadsheet" in file_type.lower():
-            content_parts = [prompt, {"mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "data": file_bytes}]
-        elif "image" in file_type.lower():
-            from PIL import Image
-            img = Image.open(io.BytesIO(file_bytes))
-            content_parts = [prompt, img]
-        else:
-            content_parts = [prompt, {"mime_type": file_type, "data": file_bytes}]
 
-        last_err = "Unknown"
-        for model_name in ["gemini-2.0-flash", "gemini-1.5-flash"]:
+        # --- Excel ---
+        if "excel" in file_type.lower() or "spreadsheet" in file_type.lower() or "xlsx" in file_type.lower():
             try:
-                model = genai.GenerativeModel(model_name)
-                response = model.generate_content(content_parts)
-                raw = _parse_json_list(response.text)
-                return self.normalize_boq_data(raw)
+                import openpyxl
+                wb = openpyxl.load_workbook(io.BytesIO(file_bytes), data_only=True)
+                lines = []
+                for sheet in wb.worksheets:
+                    lines.append(f"=== Sheet: {sheet.title} ===")
+                    for row in sheet.iter_rows(values_only=True):
+                        row_str = "\t".join([str(c) if c is not None else "" for c in row])
+                        if row_str.strip():
+                            lines.append(row_str)
+                return "\n".join(lines)
             except Exception as e:
-                last_err = str(e)
-                if "404" in last_err or "429" in last_err:
-                    continue
-                break
+                return None, f"خطأ في قراءة Excel: {str(e)}"
 
-        return [{"error": f"فشل رفع الملف: {last_err}. الرجاء لصق النص يدوياً."}]
+        # --- PDF ---
+        if "pdf" in file_type.lower():
+            try:
+                import PyPDF2
+                reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
+                pages = []
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        pages.append(text)
+                extracted = "\n".join(pages)
+                if not extracted.strip():
+                    return None, "لم يتم استخراج نص من PDF. قد يكون الملف صورة ممسوحة ضوئياً."
+                return extracted, None
+            except Exception as e:
+                return None, f"خطأ في قراءة PDF: {str(e)}"
+
+        return None, f"نوع الملف غير مدعوم: {file_type}"
+
+    def extract_boq_from_file(self, file_bytes, file_type):
+        """Extracts BOQ from uploaded files by converting to text, then using Groq."""
+        # Step 1: Convert file to text
+        result = self._file_to_text(file_bytes, file_type)
+        if isinstance(result, tuple):
+            text_content, err = result
+        else:
+            text_content, err = result, None
+
+        if not text_content:
+            return [{"error": err or "فشل تحويل الملف إلى نص."}]
+
+        # Step 2: Extract BOQ from text using Groq
+        return self.extract_boq_items(text_content)
+
 
     def calculate_cost_matrix(self, items, base_prices, overhead=0.15, waste=0.05, profit=0.20):
         """Calculates full cost matrix with overhead, waste, and profit scenarios."""
