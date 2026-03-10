@@ -36,11 +36,13 @@ def analyze_universal_link(url, depth="Deep"):
     if google_key and genai:
         genai.configure(api_key=google_key.strip())
         model_candidates = [
-            'gemini-2.0-flash-exp',
             'gemini-1.5-flash-latest', 
             'gemini-1.5-flash-002',
             'gemini-1.5-flash', 
-            'gemini-2.0-flash'
+            'gemini-1.5-pro-latest',
+            'gemini-2.0-flash-exp',
+            'gemini-2.0-flash',
+            'gemini-pro'
         ]
 
         prompt = f"""
@@ -109,13 +111,13 @@ def analyze_universal_link(url, depth="Deep"):
         st.session_state.last_ai_error = "Missing API Keys: Please set GOOGLE_API_KEY or OPENAI_API_KEY in secrets."
 
     return {
-        "domain": "الاستخبارات الرقمية العامة",
-        "essence": "تحليل أولي عبر المحرك الاحتياطي العميق.",
-        "deep_analysis": "النظام حالياً يقوم برصد البيانات الأساسية. يرجى التأكد من تفعيل مفاتيح ה-API للحصول على التحليل النخبوي الكامل الذي يتجاوز 1000 كلمة.",
-        "strategic_matrix": ["الانتشار: مرصود", "التفاعل: متوسط"],
-        "risk_assessment": ["نقص البيانات اللحظية"],
-        "forecast": "نمو مستقر مع حاجة لتحديث الرؤى.",
-        "roadmap": ["تفعيل الربط المتقدم", "تحليل المنافسين"]
+        "domain": "الاستخبارات الرقمية (وضع الاستعداد)",
+        "essence": "تم رصد ضغط عالي على المحرك (Quota Exceeded).",
+        "deep_analysis": "تلقينا استجابة '429 Quota Exceeded' من Gemini. هذا يعني أنك استنفدت الحصص المجانية حالياً. يرجى الانتظار لمدة دقيقة واحدة وإعادة المحاولة، أو تفعيل مفتاح OpenAI GPT في الإعدادات لتجاوز هذا القيد والحصول على التحليل النخبوي فوراً.",
+        "strategic_matrix": ["حالة المحرك: انتظار", "البيانات: محفوظة"],
+        "risk_assessment": ["توقف مؤقت للخدمة المجانية"],
+        "forecast": "سيعود العمل فور توفر الحصص.",
+        "roadmap": ["الانتظار لمدة 60 ثانية", "تفعيل OpenAI كمحرك بديل"]
     }
 
 def generate_strategic_insights(analysis_data, lang="Both"):
