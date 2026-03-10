@@ -23,7 +23,7 @@ class OmniProcessor:
         img = Image.open(io.BytesIO(image_bytes))
         
         # Phase 10: Model Rotation for Vision (Stable Only)
-        candidates = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro-vision']
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-pro']
         last_err = "Unknown"
         
         for model_name in candidates:
@@ -56,7 +56,7 @@ class OmniProcessor:
         img = Image.open(io.BytesIO(image_bytes))
         
         # High-res vision focus for technical details
-        candidates = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro-vision']
+        candidates = ['gemini-1.5-pro', 'gemini-1.5-flash']
         last_err = "Unknown"
         
         custom_prompt = f"""
