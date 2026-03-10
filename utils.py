@@ -128,7 +128,7 @@ def generate_branded_pdf(report_data, lang="Both"):
             pdf.multi_cell(0, 8, content)
             pdf.ln(6)
 
-        return pdf.output()
+        return bytes(pdf.output())
     except Exception as e:
         st.error(f"Critical PDF Runtime Error: {e}")
         return None
