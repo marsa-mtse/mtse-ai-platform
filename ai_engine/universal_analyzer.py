@@ -122,12 +122,20 @@ def analyze_universal_link(url, depth="Deep"):
             try:
                 client = groq.Groq(api_key=groq_key.strip())
                 prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
-                response = client.chat.completions.create(
-                    model="llama3-70b-8192",
-                    messages=[{"role": "user", "content": prompt}],
-                    response_format={ "type": "json_object" }
-                )
-                return json.loads(response.choices[0].message.content)
+                
+                # Model rotation for Groq
+                for groq_model in ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "mixtral-8x7b-32768"]:
+                    try:
+                        response = client.chat.completions.create(
+                            model=groq_model,
+                            messages=[{"role": "user", "content": prompt}],
+                            response_format={ "type": "json_object" }
+                        )
+                        return json.loads(response.choices[0].message.content)
+                    except Exception as e:
+                        if "429" in str(e) or "model_decommissioned" in str(e):
+                            continue
+                        raise e
             except Exception as e:
                 st.session_state.last_ai_error = f"Groq (Llama-3): {str(e)}"
                 pass
