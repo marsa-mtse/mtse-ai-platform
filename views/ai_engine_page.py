@@ -87,7 +87,7 @@ def render():
         render_section_header(t("مولد الحملات الإعلانية", "AI Campaign Generator"), "📝")
         
         if not plan_manager.can_access_ai_generator():
-            st.warning(t("هذه الميزة متاحة للمشتركين في خطة Pro فأعلى.", "This feature requires Pro plan or higher."))
+            st.warning(t("هذه الميزة متاحة للمشتركين في خطة Strategist فأعلى.", "This feature requires Strategist plan or higher."))
         else:
             from ai_engine.campaign_generator import get_social_preview_css, render_preview_html
             st.markdown(get_social_preview_css(), unsafe_allow_html=True)
@@ -130,7 +130,7 @@ def render():
         render_section_header(t("مقياس الانتشار الفيروسي وتطوير المحتوى", "Virality Analyzer & Rewriter"), "🔥")
         
         if not plan_manager.can_access_viral_analyzer():
-            st.warning(t("هذه الميزة الحصرية متاحة في خطة Business فقط.", "This exclusive feature is for Business plan only."))
+            st.warning(t("هذه الميزة الحصرية متاحة في خطة Strategist فأعلى.", "This exclusive feature is for Strategist plan and higher."))
         else:
             content_text = st.text_area(t("ألصق محتوى المنشور هنا", "Paste your post content here"), height=150)
             has_media = st.checkbox(t("يحتوي المنشور على صورة أو فيديو", "Post includes Image/Video"))
@@ -187,7 +187,7 @@ def render():
         render_section_header(t("التنبؤ بالاتجاهات (Trends)", "Trend Predictor"), "📈")
         
         if not plan_manager.can_access_trend_predictor():
-            st.warning(t("ميزة التنبؤ بالاتجاهات متاحة لخطة Business.", "Trend prediction available on Business plan."))
+            st.warning(t("ميزة التنبؤ بالاتجاهات متاحة لخطة Command.", "Trend prediction available on Command plan."))
         else:
             st.info(t("هذه الأداة تحلل بياناتك التاريخية لتوقع الأداء في الـ 30 يوم القادمة.", "This tool uses your historical data to predict the next 30 days."))
             df = st.session_state.get("analysis_df")
@@ -228,8 +228,8 @@ def render():
     with tab4:
         render_section_header(t("التحليل الاستراتيجي العميق", "AI Strategy Deep Dive"), "🧠")
         
-        if not plan_manager.can_access_ai_generator():
-            st.warning(t("هذه الميزة متاحة للمشتركين في خطة Business فقط.", "This feature requires Business plan."))
+        if not plan_manager.can_access_trend_predictor(): # Using trend_predictor as proxy for Strategy Deep Dive
+            st.warning(t("هذه الميزة متاحة للمشتركين في خطة Command فقط.", "This feature requires Command plan."))
         else:
             st.markdown(f"""
             <div class="glass-card" style="border-top: 4px solid var(--primary);">

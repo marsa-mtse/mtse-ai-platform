@@ -28,6 +28,14 @@ class PlanManager:
     def can_access_sentiment_command(self):
         """Command (Ultimate) only."""
         return self.plan == "Command"
+
+    def can_access_viral_analyzer(self):
+        """Strategist and Command."""
+        return self.plan in ["Strategist", "Command"]
+
+    def can_access_trend_predictor(self):
+        """Command only."""
+        return self.plan == "Command"
         
     def can_access_integrations(self):
         """Strategist and Command."""
@@ -45,6 +53,8 @@ class PlanManager:
             "sentiment_command": self.can_access_sentiment_command(),
             "api_integrations": self.can_access_integrations(),
             "white_label": self.can_access_white_label(),
+            "viral_analyzer": self.can_access_viral_analyzer(),
+            "trend_predictor": self.can_access_trend_predictor(),
             "reports_limit": PLAN_LIMITS.get(self.plan, {}).get("reports", 0),
             "uploads_limit": PLAN_LIMITS.get(self.plan, {}).get("uploads", 0)
         }
