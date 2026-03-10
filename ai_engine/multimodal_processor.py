@@ -51,6 +51,38 @@ class OmniProcessor:
         """Handle complex PDFs that normal text parsers fail on."""
         return "[Vision Intelligence] Deep PDF structural analysis initiated..."
 
+    def analyze_technical_drawing(self, image_bytes, prompt="Analyze this blueprint and extract quantities."):
+        """Specialized vision analysis for blueprints/schematics."""
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # High-res vision focus for technical details
+        candidates = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro-vision']
+        last_err = "Unknown"
+        
+        custom_prompt = f"""
+        Act as an Elite Structural Engineer and Quantity Surveyor.
+        Analyze this technical drawing / blueprint with extreme precision.
+        
+        Tasks:
+        1. Identify all visible measurement tags.
+        2. List all structural components (Columns, Beams, Furniture, Plumbing items).
+        3. Extract a preliminary Bill of Quantities (BOQ) in JSON format.
+        
+        Context/Prompt: {prompt}
+        
+        Output MUST include a valid JSON block for the items.
+        """
+        
+        for model_name in candidates:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content([custom_prompt, img])
+                return response.text
+            except Exception as e:
+                last_err = str(e)
+                continue
+        return f"Technical analysis failed: {last_err}"
+
     def process_zip(self, zip_bytes, prompt="Synthesize the contents of this archive."):
         """Analyze multi-file ZIP archives."""
         import zipfile
