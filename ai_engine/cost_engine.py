@@ -248,6 +248,54 @@ Return ONLY the JSON array, no other text.
         # Step 2: Extract BOQ from text using Groq
         return self.extract_boq_items(text_content)
 
+    def suggest_market_prices(self, items):
+        """Uses AI (Groq/Gemini) to suggest rough market prices for the extracted items."""
+        if not items:
+            return {}
+            
+        # Prepare a minimal list of items to send
+        items_text = "\n".join([f"{i}. {item.get('item', '')} ({item.get('unit', '')})" for i, item in enumerate(items)])
+        
+        prompt = f"""You are a Professional Quantity Surveyor and Estimator in the Middle East / global market.
+Please estimate a rough unit price (in USD) for the following construction/project items.
+
+Items:
+{items_text}
+
+Return ONLY a JSON dictionary where the keys are the exact item index numbers (0, 1, 2...) from the list above, 
+and the values are the suggested unit prices (as numbers).
+
+Example format:
+{{
+    "0": 150.5,
+    "1": 25.0,
+    "2": 1200.0
+}}
+"""
+        # Try Groq first
+        result, _ = self._call_groq(prompt)
+        if result and isinstance(result, dict) and len(result) > 0 and "error" not in result:
+             # Convert values to float
+             cleaned = {}
+             for k, v in result.items():
+                 try:
+                     cleaned[str(k)] = float(v)
+                 except:
+                     pass
+             return cleaned
+
+        # Fallback to Gemini
+        result, _ = self._call_gemini_text(prompt)
+        if result and isinstance(result, dict) and len(result) > 0 and "error" not in result:
+             cleaned = {}
+             for k, v in result.items():
+                 try:
+                     cleaned[str(k)] = float(v)
+                 except:
+                     pass
+             return cleaned
+
+        return {}
 
     def calculate_cost_matrix(self, items, base_prices, overhead=0.15, waste=0.05, profit=0.20):
         """Calculates full cost matrix with overhead, waste, and profit scenarios."""
