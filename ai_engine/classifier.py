@@ -18,6 +18,7 @@ class AIClassifier:
     def detect_domain(self, content_sample):
         """
         Returns one of: Engineering, Financial, Legal, Marketing, Admin, Mixed.
+        Includes model rotation for stability.
         """
         prompt = f"""
         Analyze the following content sample and classify it into exactly ONE category:
@@ -27,13 +28,20 @@ class AIClassifier:
         
         Output only the category name.
         """
-        try:
-            response = self.model.generate_content(prompt)
-            category = response.text.strip().replace("[", "").replace("]", "")
-            valid_categories = ["Engineering", "Financial", "Legal", "Marketing", "Admin", "Mixed"]
-            return category if category in valid_categories else "Marketing"
-        except:
-            return "Marketing"
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
+        
+        for model_name in candidates:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+                category = response.text.strip().replace("[", "").replace("]", "")
+                valid_categories = ["Engineering", "Financial", "Legal", "Marketing", "Admin", "Mixed"]
+                if category in valid_categories:
+                    return category
+                continue 
+            except:
+                continue
+        return "Marketing"
 
 def classify_content(content):
     classifier = AIClassifier()

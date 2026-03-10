@@ -19,10 +19,24 @@ class OmniProcessor:
         self.model = genai.GenerativeModel(model_name)
 
     def process_image(self, image_bytes, prompt="Analyze this image in detail."):
-        """Processes images using Vision capabilities."""
+        """Processes images using Vision capabilities with model rotation."""
         img = Image.open(io.BytesIO(image_bytes))
-        response = self.model.generate_content([prompt, img])
-        return response.text
+        
+        # Phase 10: Model Rotation for Vision
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-1.5-pro-latest']
+        last_err = "Unknown"
+        
+        for model_name in candidates:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content([prompt, img])
+                return response.text
+            except Exception as e:
+                last_err = str(e)
+                if "429" in last_err or "404" in last_err or "Quota" in last_err:
+                    continue
+                break
+        return f"Error analyzing image: {last_err}"
 
     def process_video(self, video_bytes, prompt="Summarize this video and identify key scenes."):
         """

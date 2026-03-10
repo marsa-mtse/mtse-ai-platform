@@ -17,7 +17,7 @@ class CostEngine:
         self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def extract_boq_items(self, content):
-        """Extracts Item, Unit, Quantity from text/PDF content."""
+        """Extracts Item, Unit, Quantity with model rotation."""
         prompt = f"""
         Act as a Professional Quantity Surveyor.
         Extract all line items from the following Bill of Quantities (BOQ).
@@ -31,12 +31,21 @@ class CostEngine:
             ...
         ]
         """
-        try:
-            response = self.model.generate_content(prompt)
-            txt = response.text.replace("```json", "").replace("```", "").strip()
-            return json.loads(txt)
-        except Exception as e:
-            return [{"error": str(e)}]
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
+        last_err = "Unknown"
+        
+        for model_name in candidates:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+                txt = response.text.replace("```json", "").replace("```", "").strip()
+                return json.loads(txt)
+            except Exception as e:
+                last_err = str(e)
+                if "429" in last_err or "404" in last_err or "Quota" in last_err:
+                    continue
+                break
+        return [{"error": f"Failed after rotation: {last_err}"}]
 
     def calculate_cost_matrix(self, items, base_prices, overhead=0.15, waste=0.05, profit=0.20):
         """

@@ -17,7 +17,7 @@ class SocialSniper:
         self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def audit_profile(self, url):
-        """Perform a 360-degree audit on a social media link."""
+        """Perform a 360-degree audit with model rotation."""
         prompt = f"""
         Act as an Elite Social Media Auditor and Strategic Growth Consultant.
         Perform a comprehensive audit on this link: {url}
@@ -45,12 +45,21 @@ class SocialSniper:
             "viral_potential": "مدى إمكانية الانتشار الفيروسي"
         }}
         """
-        try:
-            response = self.model.generate_content(prompt)
-            txt = response.text.replace("```json", "").replace("```", "").strip()
-            return json.loads(txt)
-        except Exception as e:
-            return {{"error": str(e)}}
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro']
+        last_err = "Unknown"
+        
+        for model_name in candidates:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+                txt = response.text.replace("```json", "").replace("```", "").strip()
+                return json.loads(txt)
+            except Exception as e:
+                last_err = str(e)
+                if "429" in last_err or "404" in last_err or "Quota" in last_err:
+                    continue
+                break
+        return {"error": f"Social Sniper failed after rotation: {last_err}"}
 
 def get_social_sniper():
     return SocialSniper()
