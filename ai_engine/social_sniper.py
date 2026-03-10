@@ -46,7 +46,7 @@ class SocialSniper:
         }}
         """
         candidates = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
-        last_err = "Unknown"
+        last_errs = []
         
         for model_name in candidates:
             try:
@@ -55,11 +55,9 @@ class SocialSniper:
                 txt = response.text.replace("```json", "").replace("```", "").strip()
                 return json.loads(txt)
             except Exception as e:
-                last_err = str(e)
-                if "429" in last_err or "404" in last_err or "Quota" in last_err:
-                    continue
-                break
-        return {"error": f"Social Sniper failed after rotation: {last_err}"}
+                last_errs.append(f"{model_name}: {str(e)}")
+                continue
+        return {"error": f"Social Sniper failed after rotation: {' | '.join(last_errs)}"}
 
 def get_social_sniper():
     return SocialSniper()

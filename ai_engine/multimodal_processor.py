@@ -23,8 +23,8 @@ class OmniProcessor:
         img = Image.open(io.BytesIO(image_bytes))
         
         # Phase 10: Model Rotation for Vision (Stable Only)
-        candidates = ['gemini-1.5-flash', 'gemini-1.5-pro']
-        last_err = "Unknown"
+        candidates = ['gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-pro']
+        last_errs = []
         
         for model_name in candidates:
             try:
@@ -32,11 +32,9 @@ class OmniProcessor:
                 response = model.generate_content([prompt, img])
                 return response.text
             except Exception as e:
-                last_err = str(e)
-                if "429" in last_err or "404" in last_err or "Quota" in last_err:
-                    continue
-                break
-        return f"Error analyzing image: {last_err}"
+                last_errs.append(f"{model_name}: {str(e)}")
+                continue
+        return f"Error analyzing image after rotation: {' | '.join(last_errs)}"
 
     def process_video(self, video_bytes, prompt="Summarize this video and identify key scenes."):
         """
@@ -56,8 +54,8 @@ class OmniProcessor:
         img = Image.open(io.BytesIO(image_bytes))
         
         # High-res vision focus for technical details
-        candidates = ['gemini-1.5-pro', 'gemini-1.5-flash']
-        last_err = "Unknown"
+        candidates = ['gemini-1.5-pro', 'gemini-1.5-pro-latest', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']
+        last_errs = []
         
         custom_prompt = f"""
         Act as an Elite Structural Engineer and Quantity Surveyor.
@@ -79,9 +77,9 @@ class OmniProcessor:
                 response = model.generate_content([custom_prompt, img])
                 return response.text
             except Exception as e:
-                last_err = str(e)
+                last_errs.append(f"{model_name}: {str(e)}")
                 continue
-        return f"Technical analysis failed: {last_err}"
+        return f"Technical analysis failed: {' | '.join(last_errs)}"
 
     def process_zip(self, zip_bytes, prompt="Synthesize the contents of this archive."):
         """Analyze multi-file ZIP archives."""
