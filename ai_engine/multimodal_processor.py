@@ -12,7 +12,7 @@ class OmniProcessor:
     """
     Handles multi-modal input processing (PDF, Images, Video, Web).
     """
-    def __init__(self, model_name="gemini-1.5-pro"):
+    def __init__(self, model_name="gemini-2.0-flash"):
         api_key = st.secrets.get("GOOGLE_API_KEY")
         if api_key:
             genai.configure(api_key=api_key.strip())
@@ -25,7 +25,7 @@ class OmniProcessor:
                     self.available_models.append(m.name.replace("models/", ""))
         except:
              # Fallback to standard names if list_models fails
-             self.available_models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+             self.available_models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']
         
         self.model = genai.GenerativeModel(model_name)
 

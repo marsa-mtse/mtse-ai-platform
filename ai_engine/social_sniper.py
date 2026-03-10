@@ -22,7 +22,7 @@ class SocialSniper:
                 if 'generateContent' in m.supported_generation_methods:
                     self.available_models.append(m.name.replace("models/", ""))
         except:
-             self.available_models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+             self.available_models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']
         
         self.model = genai.GenerativeModel("gemini-1.5-flash")
 

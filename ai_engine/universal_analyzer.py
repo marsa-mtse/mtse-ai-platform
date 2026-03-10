@@ -70,12 +70,8 @@ def analyze_universal_link(url, depth="Deep"):
         genai.configure(api_key=google_key.strip())
         model_candidates = [
             'gemini-2.0-flash',
-            'gemini-1.5-flash-latest', 
-            'gemini-1.5-flash-002',
-            'gemini-1.5-flash', 
-            'gemini-1.5-pro-latest',
-            'gemini-2.0-flash-exp',
-            'gemini-pro'
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
         ]
 
         # Phase 10: AI Domain Detection

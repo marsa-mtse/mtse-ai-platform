@@ -91,7 +91,7 @@ def rewrite_for_virality(content_text, tone="Viral"):
             genai.configure(api_key=google_key.strip())
             success_model = None
             response = None
-            for model_name in ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']:
+            for model_name in ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest']:
                 try:
                     model = genai.GenerativeModel(model_name)
                     prompt = f"Rewrite this for social media virality. Tone: {tone}. Content: {content_text}. Output 3 variations in Arabic. No extra text."
