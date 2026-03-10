@@ -89,34 +89,77 @@ if not st.session_state.logged_in:
 
     with col2:
         st.markdown(f"""
-        <div class="glass-card" style="padding:32px;">
-            <h3 style="text-align:center; margin-bottom:24px;">{t("تسجيل الدخول", "Sign In")}</h3>
+        <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+            <h3 style="text-align:center; margin-bottom:0;">{t("مرحباً بك في المنصة الذكية", "Welcome to the Smart Platform")}</h3>
         </div>
         """, unsafe_allow_html=True)
+        
+        tab_login, tab_signup = st.tabs([t("تسجيل الدخول", "Sign In"), t("إنشاء حساب جديد", "Create Account")])
 
-        with st.form("login_form"):
-            username = st.text_input(
-                t("اسم المستخدم", "Username"),
-                placeholder=t("أدخل اسم المستخدم", "Enter your username")
-            )
-            password = st.text_input(
-                t("كلمة المرور", "Password"),
-                type="password",
-                placeholder=t("أدخل كلمة المرور", "Enter your password")
-            )
+        with tab_login:
+            with st.form("login_form"):
+                username = st.text_input(
+                    t("اسم المستخدم", "Username"),
+                    placeholder=t("أدخل اسم المستخدم", "Enter your username")
+                )
+                password = st.text_input(
+                    t("كلمة المرور", "Password"),
+                    type="password",
+                    placeholder=t("أدخل كلمة المرور", "Enter your password")
+                )
 
-            submitted = st.form_submit_button(
-                t("🔐 دخول", "🔐 Sign In"),
-                use_container_width=True
-            )
+                submitted = st.form_submit_button(
+                    t("🔐 دخول", "🔐 Sign In"),
+                    use_container_width=True
+                )
 
-            if submitted:
-                success, message = login_user(username, password)
-                if success:
-                    st.success(message)
-                    st.rerun()
-                else:
-                    st.error(message)
+                if submitted:
+                    success, message = login_user(username, password)
+                    if success:
+                        st.success(message)
+                        st.rerun()
+                    else:
+                        st.error(message)
+
+        with tab_signup:
+            with st.form("signup_form"):
+                new_username = st.text_input(
+                    t("اختر اسم مستخدم", "Choose a Username"),
+                    placeholder=t("حروف إنجليزية وأرقام فقط", "English letters and numbers only")
+                )
+                new_password = st.text_input(
+                    t("كلمة المرور", "Password"),
+                    type="password",
+                    placeholder=t("اختر كلمة مرور قوية", "Choose a strong password")
+                )
+                new_email = st.text_input(
+                    t("البريد الإلكتروني", "Email"),
+                    placeholder=t("أدخل بريدك الإلكتروني", "Enter your email")
+                )
+                
+                signup_submitted = st.form_submit_button(
+                    t("🚀 إنشاء حساب جديد", "🚀 Create Account"),
+                    use_container_width=True
+                )
+                
+                if signup_submitted:
+                    if not new_username or not new_password:
+                        st.error(t("يرجى إدخال اسم المستخدم وكلمة المرور", "Please enter username and password"))
+                    elif len(new_password) < 6:
+                        st.error(t("كلمة المرور يجب أن تكون 6 أحرف على الأقل", "Password must be at least 6 characters"))
+                    else:
+                        from auth import hash_password
+                        from database import create_user
+                        success = create_user(
+                            new_username,
+                            hash_password(new_password),
+                            "Viewer",  # Default role
+                            "Explorer" # Default free/base plan
+                        )
+                        if success:
+                            st.success(t("✅ تم إنشاء الحساب بنجاح! نرجو تسجيل الدخول الآن.", "✅ Account created! Please sign in now."))
+                        else:
+                            st.error(t("❌ اسم المستخدم هذا مسجل مسبقاً، اختر غيره.", "❌ Username already exists, choose another one."))
 
         # Footer
         st.markdown(f"""

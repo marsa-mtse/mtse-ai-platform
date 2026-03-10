@@ -5,23 +5,74 @@
 import sqlite3
 import datetime
 import streamlit as st
+import threading
+
+try:
+    import psycopg2
+    from psycopg2.extras import DictCursor
+    HAS_PSYCOPG2 = True
+except ImportError:
+    HAS_PSYCOPG2 = False
 
 
-@st.cache_resource
+class DBWrapper:
+    """Wrapper to support both SQLite and PostgreSQL natively without ORM rewrites."""
+    
+    def __init__(self):
+        # Allow passing connection string via st.secrets
+        self.db_url = None
+        try:
+            self.db_url = st.secrets.get("DATABASE_URL")
+        except Exception:
+            pass
+        self.is_postgres = bool(self.db_url and HAS_PSYCOPG2 and self.db_url.startswith("postgres"))
+        
+        if self.is_postgres:
+            self.conn = psycopg2.connect(self.db_url)
+        else:
+            self.conn = sqlite3.connect("mtse_saas.db", check_same_thread=False)
+            self.conn.row_factory = sqlite3.Row
+
+    def execute(self, sql, params=()):
+        if self.is_postgres:
+            # Adapt SQLite syntax to Postgres automatically
+            sql = sql.replace("?", "%s")
+            sql = sql.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
+            sql = sql.replace("BLOB", "BYTEA")
+            
+            cursor = self.conn.cursor(cursor_factory=DictCursor)
+            try:
+                cursor.execute(sql, params)
+            except Exception as e:
+                self.conn.rollback()
+                raise e
+            return cursor
+        else:
+            return self.conn.execute(sql, params)
+
+    def commit(self):
+        self.conn.commit()
+        
+    def close(self):
+        self.conn.close()
+
+
+# Store a thread-local connection for the request lifecycle, or use Streamlit's cache
+_local = threading.local()
+
 def get_connection():
-    """Create a cached database connection."""
-    conn = sqlite3.connect("mtse_saas.db", check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+    """Create or retrieve a database connection."""
+    if not hasattr(_local, "db_conn") or getattr(_local, "db_conn") is None:
+        _local.db_conn = DBWrapper()
+    return _local.db_conn
 
 
 def init_database():
     """Initialize all database tables."""
     conn = get_connection()
-    c = conn.cursor()
 
     # Users table
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
             password TEXT NOT NULL,
@@ -39,7 +90,7 @@ def init_database():
     """)
 
     # Reports archive
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS reports (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
@@ -52,7 +103,7 @@ def init_database():
     """)
 
     # Activity log
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS activity_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
@@ -63,7 +114,7 @@ def init_database():
     """)
 
     # Teams table
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS teams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             company TEXT NOT NULL,
@@ -74,7 +125,7 @@ def init_database():
     """)
 
     # CRM Leads table
-    c.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS crm_leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
@@ -129,7 +180,9 @@ def create_user(username, hashed_password, role, plan):
         )
         conn.commit()
         return True
-    except sqlite3.IntegrityError:
+    except Exception:
+        # Catch both sqlite3.IntegrityError and psycopg2.IntegrityError
+        conn.conn.rollback() # Important for Postgres
         return False
 
 

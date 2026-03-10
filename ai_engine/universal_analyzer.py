@@ -179,17 +179,15 @@ def analyze_universal_link(url, depth="Deep"):
                 pass
 
     # 4. --- ELITE SAFETY ENGINE ---
+    error_msg = st.session_state.get("last_ai_error", "All AI providers failed or no API keys are provided.")
     if not any([google_key, openai_key, groq_key]):
-        st.session_state.last_ai_error = "Missing API Keys: Please set GOOGLE_API_KEY or GROQ_API_KEY in secrets."
-
+        error_msg = "Missing API Keys: Please set GOOGLE_API_KEY, GROQ_API_KEY or OPENAI_API_KEY in Streamlit secrets."
+        
     return {
-        "domain": "الاستخبارات الرقمية (وضع الاستعداد)",
-        "essence": "تم رصد ضغط عالي على المحرك (Quota Exceeded).",
-        "deep_analysis": "تلقينا استجابة '429 Quota Exceeded' من Gemini. هذا يعني أنك استنفدت الحصص المجانية حالياً. يرجى الانتظار لمدة دقيقة واحدة وإعادة المحاولة، أو تفعيل مفتاح GROQ_API_KEY (مجاني) أو OPENAI_API_KEY في الإعدادات لتجاوز هذا القيد والحصول على التحليل النخبوي فوراً.",
-        "strategic_matrix": ["حالة المحرك: انتظار", "البيانات: محفوظة"],
-        "risk_assessment": ["توقف مؤقت للخدمة المجانية"],
-        "forecast": "سيعود العمل فور توفر الحصص.",
-        "roadmap": ["الانتظار لمدة 60 ثانية", "تفعيل Groq كمحرك بديل مجاني"]
+        "error": t(
+            f"فشل التحليل الذكي بسبب: {error_msg}", 
+            f"Smart analysis failed due to: {error_msg}"
+        )
     }
 
 def generate_strategic_insights(analysis_data, lang="Both"):

@@ -32,9 +32,12 @@ class BillingEngine:
             
         try:
             import stripe
+            # Pass the username as client_reference_id so the Webhook knows who to upgrade
             session = stripe.checkout.Session.create(
                 payment_method_types=["card"],
-                customer_email=user_email,
+                customer_email=None, # Leave None to let them type their billing email separately without confusion
+                client_reference_id=user_email, # This is actually used to pass the MTSE 'username'
+                metadata={"plan_name": plan_name},
                 line_items=[{
                     "price_data": {
                         "currency": "usd",
