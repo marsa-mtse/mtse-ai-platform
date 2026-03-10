@@ -9,7 +9,9 @@ class PlanManager:
     Manages access to features based on the MTSE Disruptor tiers.
     """
     def __init__(self, current_plan):
-        self.plan = current_plan
+        # Legacy mapping for compatibility during transition
+        plan_map = {"Starter": "Explorer", "Pro": "Strategist", "Business": "Command"}
+        self.plan = plan_map.get(current_plan, current_plan)
 
     def can_access_ai_generator(self):
         """Strategist and Command only."""

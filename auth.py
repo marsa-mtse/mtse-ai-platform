@@ -41,7 +41,7 @@ def init_session():
         "logged_in": False,
         "username": None,
         "role": None,
-        "plan": None,
+        "plan": "Explorer",  # Default to Explorer
         "lang": "AR"
     }
     for key, value in defaults.items():
@@ -68,7 +68,11 @@ def login_user(username, password):
         st.session_state.logged_in = True
         st.session_state.username = user["username"]
         st.session_state.role = user["role"]
-        st.session_state.plan = user["plan"]
+        
+        # Legacy plan mapping
+        plan_map = {"Starter": "Explorer", "Pro": "Strategist", "Business": "Command"}
+        db_plan = user.get("plan", "Explorer")
+        st.session_state.plan = plan_map.get(db_plan, db_plan)
         reset_login_attempts(username)
         return True, "تم تسجيل الدخول بنجاح" if st.session_state.lang == "AR" else "Login Successful"
     else:
@@ -98,7 +102,7 @@ def create_default_admin():
             ADMIN_DEFAULT_USERNAME,
             hash_password(ADMIN_DEFAULT_PASSWORD),
             "admin",
-            "Business"
+            "Command"
         )
 
 
