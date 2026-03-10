@@ -10,6 +10,11 @@ try:
 except ImportError:
     openai = None
 
+try:
+    import groq
+except ImportError:
+    groq = None
+
 def t(ar, en):
     """Local translation helper for universal analyzer."""
     import streamlit as st
@@ -19,9 +24,11 @@ def get_api_status():
     """Returns the status of AI backends."""
     google_key = st.secrets.get("GOOGLE_API_KEY")
     openai_key = st.secrets.get("OPENAI_API_KEY")
+    groq_key = st.secrets.get("GROQ_API_KEY")
     return {
         "google": bool(google_key and genai),
-        "openai": bool(openai_key and openai)
+        "openai": bool(openai_key and openai),
+        "groq": bool(groq_key and groq)
     }
 
 def analyze_universal_link(url, depth="Deep"):
@@ -106,18 +113,34 @@ def analyze_universal_link(url, depth="Deep"):
             st.session_state.last_ai_error = f"OpenAI: {str(e)}"
             pass
 
-    # 3. --- ELITE SAFETY ENGINE ---
-    if not google_key and not openai_key:
-        st.session_state.last_ai_error = "Missing API Keys: Please set GOOGLE_API_KEY or OPENAI_API_KEY in secrets."
+    # 3. --- GROQ ELITE BACKUP (LLAMA-3 FREE) ---
+    groq_key = st.secrets.get("GROQ_API_KEY")
+    if groq_key and groq:
+        try:
+            client = groq.Groq(api_key=groq_key)
+            prompt = f"Elite Universal Intelligence Analysis (10x Depth) in Arabic for: {url}. Output JSON with keys: domain, essence, deep_analysis, strategic_matrix (list), risk_assessment (list), forecast, roadmap (list)."
+            response = client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={ "type": "json_object" }
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            st.session_state.last_ai_error = f"Groq (Llama-3): {str(e)}"
+            pass
+
+    # 4. --- ELITE SAFETY ENGINE ---
+    if not any([google_key, openai_key, groq_key]):
+        st.session_state.last_ai_error = "Missing API Keys: Please set GOOGLE_API_KEY or GROQ_API_KEY in secrets."
 
     return {
         "domain": "الاستخبارات الرقمية (وضع الاستعداد)",
         "essence": "تم رصد ضغط عالي على المحرك (Quota Exceeded).",
-        "deep_analysis": "تلقينا استجابة '429 Quota Exceeded' من Gemini. هذا يعني أنك استنفدت الحصص المجانية حالياً. يرجى الانتظار لمدة دقيقة واحدة وإعادة المحاولة، أو تفعيل مفتاح OpenAI GPT في الإعدادات لتجاوز هذا القيد والحصول على التحليل النخبوي فوراً.",
+        "deep_analysis": "تلقينا استجابة '429 Quota Exceeded' من Gemini. هذا يعني أنك استنفدت الحصص المجانية حالياً. يرجى الانتظار لمدة دقيقة واحدة وإعادة المحاولة، أو تفعيل مفتاح GROQ_API_KEY (مجاني) أو OPENAI_API_KEY في الإعدادات لتجاوز هذا القيد والحصول على التحليل النخبوي فوراً.",
         "strategic_matrix": ["حالة المحرك: انتظار", "البيانات: محفوظة"],
         "risk_assessment": ["توقف مؤقت للخدمة المجانية"],
         "forecast": "سيعود العمل فور توفر الحصص.",
-        "roadmap": ["الانتظار لمدة 60 ثانية", "تفعيل OpenAI كمحرك بديل"]
+        "roadmap": ["الانتظار لمدة 60 ثانية", "تفعيل Groq كمحرك بديل مجاني"]
     }
 
 def generate_strategic_insights(analysis_data, lang="Both"):

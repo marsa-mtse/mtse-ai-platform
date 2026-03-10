@@ -26,9 +26,10 @@ def render():
     # --- API STATUS CENTER ---
     status = get_api_status()
     with st.expander(t("📡 حالة الإتصال بالمحركات الاستخباراتية", "📡 Intelligence Engine Connectivity"), expanded=False):
-        c1, c2 = st.columns(2)
+        c1, c2, c3 = st.columns(3)
         c1.write(f"Gemini AI: {'✅ ' + t('متصل', 'Connected') if status['google'] else '❌ ' + t('غير متصل', 'Disconnected')}")
         c2.write(f"OpenAI GPT: {'✅ ' + t('متصل', 'Connected') if status['openai'] else '❌ ' + t('غير متصل', 'Disconnected')}")
+        c3.write(f"Groq Llama: {'✅ ' + t('متصل', 'Connected') if status['groq'] else '❌ ' + t('غير متصل', 'Disconnected')}")
         
         if st.session_state.get("last_ai_error"):
             st.error(f"⚠️ {t('آخر خطأ تقني:', 'Last Technical Error:')} {st.session_state.last_ai_error}")
