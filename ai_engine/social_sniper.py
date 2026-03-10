@@ -62,6 +62,12 @@ class SocialSniper:
                 model = genai.GenerativeModel(model_name)
                 response = model.generate_content(prompt)
                 txt = response.text.replace("```json", "").replace("```", "").strip()
+                
+                # Robust extraction
+                start = txt.find("{")
+                end = txt.rfind("}")
+                if start != -1 and end != -1:
+                    return json.loads(txt[start:end+1])
                 return json.loads(txt)
             except Exception as e:
                 last_errs.append(f"{model_name}: {str(e)}")

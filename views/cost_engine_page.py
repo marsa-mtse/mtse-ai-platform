@@ -32,26 +32,56 @@ def render():
         boq_file = st.file_uploader(t("رفع مقايسة (PDF/Excel)", "Upload BOQ (PDF/Excel)"), type=["pdf", "xlsx"])
 
     if st.button(t("🔍 استخراج البنود والكميات ذكياً", "🔍 Extract Items & Qty Smartly"), use_container_width=True):
-        if boq_input:
-            with st.spinner(t("جاري معالجة البيانات واستخراج الجداول...", "Processing data and extracting tables...")):
-                engine = get_cost_engine()
+        engine = get_cost_engine()
+        with st.spinner(t("جاري معالجة البيانات واستخراج الجداول...", "Processing data and extracting tables...")):
+            if boq_file:
+                # Handle file upload
+                file_bytes = boq_file.getvalue()
+                st.session_state.boq_items = engine.extract_boq_from_file(file_bytes, boq_file.type)
+                st.success(t("✅ تم استخراج البنود من الملف بنجاح!", "✅ Items extracted from file successfully!"))
+            elif boq_input:
+                # Handle text input
                 st.session_state.boq_items = engine.extract_boq_items(boq_input)
-                st.success(t("✅ تم استخراج البنود بنجاح!", "✅ Items extracted successfully!"))
+                st.success(t("✅ تم استخراج البنود من النص بنجاح!", "✅ Items extracted from text successfully!"))
+            else:
+                st.warning(t("⚠️ يرجى إدخال نص المقايسة أو رفع ملف أولاً.", "⚠️ Please enter BOQ text or upload a file first."))
 
     if st.session_state.get("boq_items"):
         items = st.session_state.boq_items
+        
+        # Check if the result is an error message
+        if isinstance(items, list) and len(items) > 0 and "error" in items[0]:
+            st.error(f"❌ {items[0]['error']}")
+            if st.button(t("🗑️ تصفير", "Clear")):
+                st.session_state.boq_items = None
+                st.rerun()
+            return
+
         df = pd.DataFrame(items)
         
+        # Basic validation of expected columns
+        required_cols = ['item', 'unit', 'quantity']
+        if not all(col in df.columns for col in required_cols):
+             st.error(t("❌ البيانات المستخرجة ليست بالشكل المطلوب. يرجى المحاولة مرة أخرى أو استخدام نص المقايسة.", "❌ Extracted data is not in the required format. Please try again or use text input."))
+             if st.button(t("🗑️ تصفير", "Clear")):
+                st.session_state.boq_items = None
+                st.rerun()
+             return
+
         render_section_header(t("مرحلة التسعير والتقدير", "Pricing & Estimation Phase"), "🏗️")
         
         # User dynamic pricing input
         st.markdown(t("### 📝 أدخل سعر الوحدة لكل بند:", "### 📝 Enter unit price for each item:"))
         base_prices = {}
         for i, row in df.iterrows():
+            item_name = row.get('item', t('بند غير معروف', 'Unknown Item'))
+            item_unit = row.get('unit', '-')
+            item_qty = row.get('quantity', 0)
+            
             c1, c2, c3 = st.columns([3, 1, 2])
-            c1.write(f"**{row['item']}** ({row['unit']})")
-            c2.write(f"Qty: {row['quantity']}")
-            base_prices[str(i)] = c3.number_input(f"Unit Price for {row['item']}", min_value=0.0, step=1.0, key=f"price_{i}")
+            c1.write(f"**{item_name}** ({item_unit})")
+            c2.write(f"Qty: {item_qty}")
+            base_prices[str(i)] = c3.number_input(f"Unit Price for {item_name}", min_value=0.0, step=1.0, key=f"price_{i}")
 
         st.markdown("---")
         

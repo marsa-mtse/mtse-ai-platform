@@ -58,19 +58,19 @@ def render():
         
         # Action: Send to Cost Engine
         if st.button(t("💰 إرسال البنود المستخرجة إلى محرك التكاليف", "💰 Send Extracted Items to Cost Engine"), use_container_width=True):
-            # Simulated logic to parse JSON from text and send to session state
             try:
-                # Simple extraction of anything between { } to find potential BOQ items
+                # Robust extraction: find the JSON list structure
                 start = analysis.find("[")
-                end = analysis.rfind("]") + 1
+                end = analysis.rfind("]")
                 if start != -1 and end != -1:
-                    items = json.loads(analysis[start:end])
+                    raw_json = analysis[start:end+1]
+                    items = json.loads(raw_json)
                     st.session_state.boq_items = items
                     st.success(t("✅ تم إرسال البيانات للمقايسة! انتقل لصفحة محرك التكاليف الآن.", "✅ Data sent to BOQ! Go to Cost Engine page now."))
                 else:
                     st.error(t("❌ لم يتم العثور على جدول بيانات منظم في التحليل.", "❌ No structured data table found in analysis."))
-            except:
-                 st.error(t("❌ فشل في استخراج البيانات المنظمة آلياً.", "❌ Failed to auto-extract structured data."))
+            except Exception as e:
+                 st.error(t(f"❌ فشل في استخراج البيانات المنظمة آلياً: {str(e)}", f"❌ Failed to auto-extract structured data: {str(e)}"))
 
         if st.button(t("🗑️ تصفير التحليل", "🗑️ Clear Analysis")):
             st.session_state.tech_drawing_analysis = None
