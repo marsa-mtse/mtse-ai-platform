@@ -35,6 +35,7 @@ from views import intel_hub_page
 from views import creative_hub_page
 from views import industrial_hub_page
 from views import social_command_page
+from views import owner_panel_page
 
 # ==============================
 # INIT
@@ -217,6 +218,10 @@ with st.sidebar:
         ("Settings", "⚙️", t("الإعدادات", "Settings")),
     ]
 
+    from config import ADMIN_DEFAULT_USERNAME
+    if st.session_state.username == ADMIN_DEFAULT_USERNAME:
+        nav_items.insert(0, ("Owner Panel", "👑", t("لوحة المالك (Owner)", "Owner Panel")))
+
     for page_id, icon, label in nav_items:
         is_active = st.session_state.page == page_id
         if st.button(
@@ -256,6 +261,7 @@ with st.sidebar:
 page = st.session_state.page
 
 page_map = {
+    "Owner Panel": owner_panel_page,
     "Dashboard": dashboard_page,
     "Intel Hub": intel_hub_page,
     "Creative War Room": creative_hub_page,
