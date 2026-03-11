@@ -21,7 +21,7 @@ class PlanManager:
         return self.plan in ["Strategist", "Command"]
 
     def can_access_universal_analyzer(self):
-        """All plans have basic access, but depth varies."""
+        """All plans."""
         return True
 
     def can_access_competitor_battleground(self):
@@ -41,14 +41,18 @@ class PlanManager:
         return self.plan == "Command"
         
     def can_access_integrations(self):
-        """Strategist and Command."""
-        return self.plan in ["Strategist", "Command"]
+        """Command only - V10 Enterprise."""
+        return self.plan == "Command"
 
     def can_access_white_label(self):
         """Command only."""
         return self.plan == "Command"
 
     def can_access_multimodal(self):
+        """Strategist and Command."""
+        return self.plan in ["Strategist", "Command"]
+
+    def can_access_campaign_orchestrator(self):
         """Strategist and Command."""
         return self.plan in ["Strategist", "Command"]
 
@@ -62,6 +66,7 @@ class PlanManager:
             "white_label": self.can_access_white_label(),
             "viral_analyzer": self.can_access_viral_analyzer(),
             "trend_predictor": self.can_access_trend_predictor(),
+            "campaign_orchestrator": self.can_access_campaign_orchestrator(),
             "reports_limit": PLAN_LIMITS.get(self.plan, {}).get("reports", 0),
             "uploads_limit": PLAN_LIMITS.get(self.plan, {}).get("uploads", 0)
         }

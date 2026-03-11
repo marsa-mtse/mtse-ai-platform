@@ -89,6 +89,10 @@ def init_database():
             brand_name TEXT,
             brand_logo_base64 TEXT,
             brand_color TEXT DEFAULT '#1a73e8',
+            stripe_customer_id TEXT,
+            subscription_id TEXT,
+            subscription_status TEXT DEFAULT 'Inactive',
+            plan_expiry TEXT,
             created_at TEXT NOT NULL
         )
     """)
@@ -228,12 +232,20 @@ def update_password(username, hashed_password):
     conn.commit()
 
 
-def update_plan(username, new_plan):
-    """Update a user's plan."""
+def update_plan(username, new_plan, stripe_sub_id=None, stripe_cus_id=None, status='Active'):
+    """Update a user's plan and subscription details."""
     conn = get_connection()
+    expiry = (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat()
     conn.execute(
-        "UPDATE users SET plan=?, billing_status='Active', expiry_date=? WHERE username=?",
-        (new_plan, (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat(), username)
+        """UPDATE users SET 
+           plan=?, 
+           billing_status=?, 
+           expiry_date=?, 
+           subscription_id=?, 
+           stripe_customer_id=?, 
+           subscription_status=?
+           WHERE username=?""",
+        (new_plan, status, expiry, stripe_sub_id, stripe_cus_id, status, username)
     )
     conn.commit()
 

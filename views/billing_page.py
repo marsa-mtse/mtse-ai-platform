@@ -11,15 +11,23 @@ from billing.stripe import BillingEngine
 def render():
     """Render the Billing & Subscription page."""
     
-    current_plan = st.session_state.plan
     username = st.session_state.username
+    from database import get_user
+    user_data = get_user(username)
+    current_plan = user_data.get("plan", "Explorer")
+    status = user_data.get("subscription_status", "Active")
+    expiry = user_data.get("plan_expiry", "N/A")
     billing = BillingEngine()
 
     st.markdown(f"""
     <div class="glass-card animate-in" style="text-align:center;">
         <h2>💳 {t("الفوترة والاشتراكات", "Billing & Subscriptions")}</h2>
         <p style="color:#94a3b8;">{t("إدارة خطتك الحالية وترقية حسابك", "Manage your plan and upgrade account")}</p>
-        <span class="status-badge status-active">{t('الخطة الحالية:', 'Current Plan:')} {current_plan}</span>
+        <div style="display:flex; justify-content:center; gap:20px; margin-top:15px;">
+            <span class="status-badge badge-active">{t('الخطة:', 'Plan:')} {current_plan}</span>
+            <span class="status-badge badge-warning">{t('الحالة:', 'Status:')} {status}</span>
+            <span class="status-badge" style="background:rgba(255,255,255,0.1);">{t('تاريخ الانتهاء:', 'Expiry:')} {expiry[:10] if expiry else 'N/A'}</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -29,8 +37,8 @@ def render():
     
     plans_info = [
         {"name": "Explorer", "price": PLAN_PRICING["Explorer"], "features": [t("التحليل العالمي المنفرد", "Single Omni-Analysis"), t("10 تقارير نخبورية/شهر", "10 Elite Reports/mo"), t("دعم البريد الإلكتروني", "Email Support")]},
-        {"name": "Strategist", "price": PLAN_PRICING["Strategist"], "features": [t("ساحة معركة المنافسين", "Competitor Battleground"), t("تكامل المنصات (APIs)", "Platform APIs"), t("100 تقرير نخبوي/شهر", "100 Elite Reports/mo"), t("دعم تقني سريع", "Priority Support")]},
-        {"name": "Command", "price": PLAN_PRICING["Command"], "features": [t("مركز قيادة المشاعر", "Sentiment Command"), t("تحليل غير محدود", "Unlimited Analysis"), t("العلامة البيضاء (White Label)", "White Label Engine"), t("دعم مخصص 24/7", "Dedicated Elite Support")]}
+        {"name": "Strategist", "price": PLAN_PRICING["Strategist"], "features": [t("ساحة معرفة المنافسين", "Competitor Battleground"), t("مايسترو الحملات الذكي", "Smart Campaign Orchestrator"), t("100 تقرير نخبوي/شهر", "100 Elite Reports/mo"), t("دعم تقني سريع", "Priority Support")]},
+        {"name": "Command", "price": PLAN_PRICING["Command"], "features": [t("مركز قيادة المشاعر", "Sentiment Command"), t("تكامل المنصات الكامل (APIs)", "Full Platform APIs"), t("العلامة البيضاء (White Label)", "White Label Engine"), t("دعم مخصص 24/7", "Dedicated Elite Support")]}
     ]
     
     cols = [col1, col2, col3]
@@ -38,38 +46,47 @@ def render():
     for i, plan in enumerate(plans_info):
         with cols[i]:
             is_current = (current_plan == plan["name"])
-            # Using brighter, high-contrast colors for ALL tiers to ensure premium look
             accent_color = "#fbbf24" if plan["name"] == "Explorer" else "#c084fc" if plan["name"] == "Strategist" else "#22d3ee"
-            border_color = "#fbbf24" if plan["name"] == "Explorer" else "#a855f7" if plan["name"] == "Strategist" else "#0ea5e9"
-            bg_color = "rgba(251, 191, 36, 0.05)" if plan["name"] == "Explorer" else "rgba(168, 85, 247, 0.05)" if plan["name"] == "Strategist" else "rgba(14, 165, 233, 0.05)"
+            border_color = "#6366f1" if is_current else ("#fbbf24" if plan["name"] == "Explorer" else "#a855f7" if plan["name"] == "Strategist" else "#0ea5e9")
             
-            # Highlight if current
-            if is_current:
-                bg_color = "rgba(99, 102, 241, 0.2)"
-                border_color = "#6366f1"
-
             st.markdown(f"""
-            <div class="glass-card" style="border: 2px solid {border_color}; text-align:center; position:relative; background:{bg_color}; min-height:500px; display: flex; flex-direction: column; justify-content: space-between;">
-                {"<div style='position:absolute; top:-12px; right:10px; background:#6366f1; color:white; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold;'>Current</div>" if is_current else ""}
-                <div style="flex-grow: 1;">
-                    <h3 style="margin-top:0; color:#f8fafc; font-size: 1.5rem;">{plan["name"]}</h3>
-                    <div style="font-size:3.2rem; font-weight:900; color:white; margin:20px 0;">
-                        <span style="font-size:1.6rem; vertical-align:top; color:{accent_color}; font-weight:700;">$</span>{plan["price"]}
-                        <span style="font-size:1.2rem; color:#94a3b8; font-weight:400;">/mo</span>
-                    </div>
-                    <ul style="list-style:none; padding:0; text-align:left; color:#cbd5e1; margin-bottom:30px; font-size: 1rem;">
-                        {''.join([f'<li style="margin:14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">✨ {feat}</li>' for feat in plan['features']])}
-                    </ul>
+            <div class="glass-card" style="border: 2px solid {border_color}; text-align:center; background:rgba(255,255,255,0.03); min-height:500px;">
+                <h3 style="color:#f8fafc;">{plan["name"]}</h3>
+                <div style="font-size:2.8rem; font-weight:900; color:white; margin:15px 0;">
+                    <span style="font-size:1.4rem; color:{accent_color};">$</span>{plan["price"]}
                 </div>
+                <ul style="list-style:none; padding:0; text-align:left; color:#94a3b8; font-size: 0.9rem;">
+                    {''.join([f'<li style="margin:10px 0;">✅ {feat}</li>' for feat in plan['features']])}
+                </ul>
             </div>
             """, unsafe_allow_html=True)
             
             if not is_current:
-                if st.button(f"{t('ترقية إلى', 'Upgrade to')} {plan['name']}", key=f"upgrade_{plan['name']}", use_container_width=True):
-                    result = billing.create_checkout_session(plan["name"], plan["price"])
+                if st.button(t(f"ترقية إلى {plan['name']}", f"Upgrade to {plan['name']}"), key=f"up_{plan['name']}", use_container_width=True):
+                    result = billing.create_checkout_session(plan["name"], plan["price"], username=username)
                     if result["status"] in ["success", "simulation"]:
-                        st.info(f"🔗 {result['message']}" if 'message' in result else "🔗 Redirecting to Stripe...")
-                        st.markdown(f"[💳 {t('رابط الدفع المباشر', 'Pay Here')} -> {plan['name']}]({result['url']})")
+                        st.success(t("🔗 الرابط جاهز للدفع", "🔗 Payment Link Ready"))
+                        st.markdown(f'<a href="{result["url"]}" target="_blank" style="display:block; text-align:center; background:#6366f1; color:white; padding:10px; border-radius:8px; text-decoration:none;">💳 {t("إتمام الدفع الان", "Complete Payment Now")}</a>', unsafe_allow_html=True)
+            else:
+                st.button(t("خطتك الحالية", "Current Plan"), disabled=True, use_container_width=True)
+
+    # Simulation tools for V10 testing
+    st.markdown("---")
+    with st.expander(t("🛠️ أدوات المطور (فحص الترقية)", "Developer Tools (Audit Upgrade)")):
+        col_s1, col_s2 = st.columns(2)
+        with col_s1:
+            if st.button(t("🚀 محاكاة نجاح الدفع (ترقية لـ Command)", "Simulate Payment Success (To Command)")):
+                from billing.webhook_handler import simulate_upgrade
+                success, msg = simulate_upgrade(username, "Command")
+                if success:
+                    st.success(msg)
+                    st.rerun()
+        with col_s2:
+            if st.button(t("🔄 تصفير الحساب لـ Explorer", "Reset to Explorer")):
+                from database import update_plan
+                update_plan(username, "Explorer")
+                st.rerun()
+'url']})")
                     else:
                         st.error(f"Error: {result['message']}")
             else:

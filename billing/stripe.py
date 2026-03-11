@@ -20,13 +20,13 @@ class BillingEngine:
             except ImportError:
                 self.is_live = False
 
-    def create_checkout_session(self, plan_name, price_amount, user_email=None):
+    def create_checkout_session(self, plan_name, price_amount, username=None):
         """Create a Stripe checkout session."""
         if not self.is_live:
             # Simulation Mode
             return {
                 "status": "simulation",
-                "url": "https://mtse-platform.example.com/checkout/simulated",
+                "url": f"https://mtse-platform.example.com/checkout/simulated?plan={plan_name}&user={username}",
                 "message": "Stripe API Key not found. Displaying simulated checkout link."
             }
             
@@ -35,15 +35,14 @@ class BillingEngine:
             # Pass the username as client_reference_id so the Webhook knows who to upgrade
             session = stripe.checkout.Session.create(
                 payment_method_types=["card"],
-                customer_email=None, # Leave None to let them type their billing email separately without confusion
-                client_reference_id=user_email, # This is actually used to pass the MTSE 'username'
+                client_reference_id=username, # CRITICAL: Map to MTSE username
                 metadata={"plan_name": plan_name},
                 line_items=[{
                     "price_data": {
                         "currency": "usd",
                         "product_data": {
                             "name": f"MTSE {plan_name} Plan",
-                            "description": f"Enterprise Marketing Platform Subscription"
+                            "description": f"Enterprise Marketing Platform Subscription - V10 Generation"
                         },
                         "unit_amount": int(price_amount * 100), # cents
                     },
