@@ -47,7 +47,7 @@ def perform_maintenance():
     steps = [
         "git add .",
         f'git commit -m "Auto-Maintenance Sync: {timestamp}"',
-        "git push origin master"
+        "git push origin master --force"
     ]
 
     for step in steps:
