@@ -33,6 +33,9 @@ from views import expert_tools_page
 from views import cost_engine_page
 from views import social_analysis_page
 from views import technical_intel_page
+from views import video_intel_page
+from views import campaign_page
+from views import workspace_page
 
 # ==============================
 # INIT
@@ -206,9 +209,11 @@ with st.sidebar:
         ("Analytics", "📊", t("التحليلات", "Analytics")),
         ("Expert Tools", "🛠️", t("أدوات النخبة", "Expert Tools")),
         ("AI Engine", "🤖", t("محرك AI", "AI Engine")),
-        ("Reports", "📁", t("التقارير", "Reports")),
+        ("Workspace", "🏢", t("مساحة العمل", "Workspace Hub")),
         ("Cost Engine", "💰", t("محرك التكاليف", "Cost Engine")),
         ("Social Sniper", "🎯", t("قناص السوشيال", "Social Sniper")),
+        ("Campaign Orchestrator", "🧠", t("مايسترو الحملات", "Campaign Orchestrator")),
+        ("Video Intelligence", "📹", t("ذكاء الفيديو", "Video Intelligence")), # Added Video Intelligence
         ("Technical Intel", "📐", t("استخبارات المخططات", "Technical Intel")),
         ("Users", "👥", t("المستخدمين", "Users")),
         ("Billing", "💳", t("الفوترة", "Billing")),
@@ -250,9 +255,11 @@ page_map = {
     "Analytics": analytics_page,
     "Expert Tools": expert_tools_page,
     "AI Engine": ai_engine_page,
-    "Reports": reports_page,
+    "Workspace": workspace_page,
     "Cost Engine": cost_engine_page,
     "Social Sniper": social_analysis_page,
+    "Campaign Orchestrator": campaign_page,
+    "Video Intelligence": video_intel_page,
     "Technical Intel": technical_intel_page,
     "Users": users_page,
     "Billing": billing_page,

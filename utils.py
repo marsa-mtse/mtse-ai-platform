@@ -54,7 +54,7 @@ def format_arabic(text):
         st.warning(f"Arabic Formatting Error: {e}")
         return text
 
-def generate_branded_pdf(report_data, lang="Both"):
+def generate_branded_pdf(report_data, brand_data=None, lang="Both"):
     """
     Generates a professional PDF with branding and Unicode support.
     """
@@ -90,19 +90,44 @@ def generate_branded_pdf(report_data, lang="Both"):
                         st.warning(f"Bold font registration error: {e}")
 
             def header(self):
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                logo_path = os.path.join(base_dir, 'assets', 'logo_premium.png')
-                if os.path.exists(logo_path):
+                # Apply Dynamic Branding
+                if brand_data and brand_data.get("logo"):
                     try:
-                        self.image(logo_path, 10, 8, 30)
+                        import base64
+                        import io
+                        from PIL import Image
+                        
+                        logo_data = base64.b64decode(brand_data["logo"])
+                        logo_img = Image.open(io.BytesIO(logo_data))
+                        # Save temp for FPDF
+                        logo_tmp = "brand_logo_tmp.png"
+                        logo_img.save(logo_tmp)
+                        self.image(logo_tmp, 10, 8, 30)
                     except Exception as e:
-                        st.warning(f"Logo print error: {e}")
+                        st.warning(f"Custom Logo print error: {e}")
                 else:
-                    self.set_font(self.bold_font, 'B', 15)
-                    self.cell(0, 10, 'MTSE AI Platform', 0, 0, 'L')
+                    # Fallback to default logo or text
+                    base_dir = os.path.dirname(os.path.abspath(__file__))
+                    logo_path = os.path.join(base_dir, 'assets', 'logo_premium.png')
+                    if os.path.exists(logo_path):
+                        try:
+                            self.image(logo_path, 10, 8, 30)
+                        except Exception as e:
+                            st.warning(f"Default Logo print error: {e}")
+                    else:
+                        brand_name = brand_data.get("name") if brand_data else "MTSE AI Platform"
+                        self.set_font(self.bold_font, 'B', 15)
+                        self.cell(0, 10, brand_name, 0, 0, 'L')
                 
                 self.ln(20)
-                self.set_draw_color(26, 115, 232)
+                # Primary color theme
+                p_color = brand_data.get("color", "#1a73e8") if brand_data else "#1a73e8"
+                # Convert hex to RGB
+                r = int(p_color[1:3], 16)
+                g = int(p_color[3:5], 16)
+                b = int(p_color[5:7], 16)
+                
+                self.set_draw_color(r, g, b)
                 self.line(10, 32, 200, 32)
                 self.ln(10)
 
@@ -110,21 +135,28 @@ def generate_branded_pdf(report_data, lang="Both"):
                 self.set_y(-15)
                 self.set_font(self.main_font, '', 8)
                 self.set_text_color(150)
-                self.cell(0, 10, f'Page {self.page_no()} | MTSE Digital Marketing Engine', 0, 0, 'C')
+                footer_text = brand_data.get("name") if brand_data else "MTSE Digital Marketing Engine"
+                self.cell(0, 10, f'Page {self.page_no()} | {footer_text}', 0, 0, 'C')
 
         pdf = BrandedPDF()
         pdf.add_page()
         
+        # Theme Color Setup
+        p_color = brand_data.get("color", "#1a73e8") if brand_data else "#1a73e8"
+        r = int(p_color[1:3], 16)
+        g = int(p_color[3:5], 16)
+        b = int(p_color[5:7], 16)
+
         # Performance: Set font once if possible
         pdf.set_font(pdf.bold_font, 'B', 18)
-        pdf.set_text_color(26, 115, 232)
+        pdf.set_text_color(r, g, b)
         title = format_arabic(report_data.get("title", "Strategic Report"))
         pdf.cell(0, 15, title, 0, 1, 'C')
         pdf.ln(10)
 
         for section in report_data.get("sections", []):
             # 🎨 PREMIUM SECTION HEADER
-            pdf.set_fill_color(26, 115, 232) # MTSE Blue
+            pdf.set_fill_color(r, g, b) 
             pdf.set_text_color(255, 255, 255)
             pdf.set_font(pdf.bold_font, 'B', 14)
             

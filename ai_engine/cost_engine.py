@@ -5,6 +5,8 @@
 import streamlit as st
 import json
 import re
+from typing import List, Optional
+from pydantic import BaseModel, Field, ValidationError
 from utils import t
 
 try:
@@ -32,6 +34,15 @@ def _parse_json_list(txt):
     if start != -1 and end != -1:
         return json.loads(txt[start:end+1])
     return json.loads(txt)
+
+
+class BOQItemModel(BaseModel):
+    item: str = Field(description="Description of the item or work")
+    unit: str = Field(description="Unit of measurement (e.g., m2, kg, ton, unit)")
+    quantity: float = Field(description="Quantity required")
+
+class BOQResultModel(BaseModel):
+    items: List[BOQItemModel]
 
 
 class CostEngine:
@@ -94,7 +105,13 @@ class CostEngine:
 
         if not normalized:
             return [{"error": "لم يتم العثور على بنود في الاستجابة. حاول مرة أخرى أو تحقق من البيانات."}]
-        return normalized
+            
+        # Pydantic Strict Validation
+        try:
+            validated_obj = BOQResultModel(items=normalized)
+            return [model.model_dump() for model in validated_obj.items]
+        except ValidationError as e:
+            return [{"error": f"فشل التحقق من صحة البيانات (Pydantic Error): {str(e)}"}]
 
     def _call_groq(self, prompt_text):
         """Call Groq API for text BOQ extraction. Returns raw parsed data or None."""
@@ -248,7 +265,9 @@ Return ONLY the JSON array, no other text.
         # Step 2: Extract BOQ from text using Groq
         return self.extract_boq_items(text_content)
 
-    def suggest_market_prices(self, items):
+    @staticmethod
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def suggest_market_prices(items):
         """Uses AI (Groq/Gemini) to suggest rough market prices for the extracted items."""
         if not items:
             return {}
@@ -273,7 +292,8 @@ Example format:
 }}
 """
         # Try Groq first
-        result, _ = self._call_groq(prompt)
+        dummy_instance = CostEngine()
+        result, _ = dummy_instance._call_groq(prompt)
         if result and isinstance(result, dict) and len(result) > 0 and "error" not in result:
              # Convert values to float
              cleaned = {}
@@ -285,7 +305,7 @@ Example format:
              return cleaned
 
         # Fallback to Gemini
-        result, _ = self._call_gemini_text(prompt)
+        result, _ = dummy_instance._call_gemini_text(prompt)
         if result and isinstance(result, dict) and len(result) > 0 and "error" not in result:
              cleaned = {}
              for k, v in result.items():

@@ -6,6 +6,7 @@ import sqlite3
 import datetime
 import streamlit as st
 import threading
+import json
 
 try:
     import psycopg2
@@ -85,6 +86,9 @@ def init_database():
             company TEXT,
             billing_status TEXT DEFAULT 'Active',
             expiry_date TEXT,
+            brand_name TEXT,
+            brand_logo_base64 TEXT,
+            brand_color TEXT DEFAULT '#1a73e8',
             created_at TEXT NOT NULL
         )
     """)
@@ -133,6 +137,34 @@ def init_database():
             company TEXT,
             status TEXT DEFAULT 'New',
             created_at TEXT
+        )
+    """)
+
+    # --- ENTERPRISE EXTENSIONS ---
+    
+    # Projects table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            company TEXT,
+            owner TEXT NOT NULL,
+            description TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (owner) REFERENCES users (username)
+        )
+    """)
+    
+    # Project assets table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS project_assets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            asset_type TEXT NOT NULL,
+            asset_data TEXT NOT NULL,
+            created_by TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (project_id) REFERENCES projects (id)
         )
     """)
 
@@ -401,3 +433,80 @@ def get_user_company(username):
     """Get the company a user belongs to."""
     user = get_user(username)
     return user.get("company") if user else None
+
+
+def update_user_branding(username, brand_name, logo_base64, brand_color):
+    """Update user branding settings."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE users SET brand_name=?, brand_logo_base64=?, brand_color=? WHERE username=?",
+        (brand_name, logo_base64, brand_color, username)
+    )
+    conn.commit()
+
+
+def get_user_branding(username):
+    """Get user branding settings with defaults."""
+    user = get_user(username)
+    if user:
+        return {
+            "name": user.get("brand_name") or "MTSE AI Platform",
+            "logo": user.get("brand_logo_base64"),
+            "color": user.get("brand_color") or "#1a73e8"
+        }
+# ==============================
+# PROJECT & TEAM HELPERS (ENTERPRISE)
+# ==============================
+
+def create_project(name, owner, company, description=""):
+    """Create a new enterprise project."""
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO projects (name, owner, company, description, created_at) VALUES (?, ?, ?, ?, ?)",
+        (name, owner, company, description, datetime.datetime.now().isoformat())
+    )
+    conn.commit()
+
+def get_projects(company):
+    """Retrieve all projects for a company."""
+    conn = get_connection()
+    return conn.execute("SELECT * FROM projects WHERE company = ? ORDER BY created_at DESC", (company,)).fetchall()
+
+def add_project_asset(project_id, asset_type, asset_data, created_by):
+    """Link an AI report or strategy to a project."""
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO project_assets (project_id, asset_type, asset_data, created_by, created_at) VALUES (?, ?, ?, ?, ?)",
+        (project_id, asset_type, json.dumps(asset_data), created_by, datetime.datetime.now().isoformat())
+    )
+    conn.commit()
+
+def get_project_assets(project_id):
+    """Retrieve all assets for a project."""
+    conn = get_connection()
+    rows = conn.execute("SELECT * FROM project_assets WHERE project_id = ? ORDER BY created_at DESC", (project_id,)).fetchall()
+    assets = []
+    for row in rows:
+        d = dict(row)
+        try:
+            d['asset_data'] = json.loads(d['asset_data'])
+        except:
+            pass
+        assets.append(d)
+    return assets
+
+def get_company_members(company):
+    """List all users belonging to the same company."""
+    conn = get_connection()
+    return conn.execute("SELECT username, role, plan FROM users WHERE company = ?", (company,)).fetchall()
+
+def update_user_role(username, role):
+    """Update a user's RBAC role."""
+    conn = get_connection()
+    conn.execute("UPDATE users SET role = ? WHERE username = ?", (role, username))
+    conn.commit()
+
+def is_admin(username):
+    """Check if user has Admin privileges."""
+    user = get_user(username)
+    return user.get("role") == "Admin" if user else False

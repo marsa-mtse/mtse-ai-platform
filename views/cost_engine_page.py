@@ -8,6 +8,8 @@ import io
 from utils import t, render_section_header
 from ai_engine.cost_engine import get_cost_engine
 from billing.plans import PlanManager
+from database import get_user_branding
+from utils import generate_branded_pdf
 
 def render():
     """Render the Cost Engine page."""
@@ -217,6 +219,47 @@ def render():
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True
             )
+
+            # --- PDF BRANDED EXPORT ---
+            if st.button(t("📄 تحميل تقرير PDF احترافي (Branded)", "📄 Download Professional PDF (Branded)"), use_container_width=True):
+                with st.spinner(t("جاري توليد التقرير بنظام علامتك التجارية...", "Generating branded report...")):
+                    brand = get_user_branding(st.session_state.username)
+                    
+                    # Prepare data for PDF
+                    pdf_data = {
+                        "title": t("مقايسة تكاليف المشروع", "Project Cost Estimate"),
+                        "sections": [
+                            {
+                                "heading": t("ملخص المشروع", "Project Summary"),
+                                "content": f"""◈ {t('إجمالي التكلفة المباشرة', 'Total Direct Cost')}: ${calc['summary']['total_direct']:,.2f}
+◈ {t('إجمالي شامل الهالك', 'Total with Waste')}: ${calc['summary']['total_with_waste']:,.2f}
+◈ {t('السعر النهائي للمشروع', 'Final Grand Total')}: ${calc['summary']['total_grand']:,.2f}
+"""
+                            }
+                        ]
+                    }
+                    
+                    # Add items list
+                    items_content = ""
+                    for item in calc["items"]:
+                        items_content += f"➤ {item['item']}: {item['qty']} {item['unit']} @ ${item['final_price']:,.2f}\n"
+                    
+                    pdf_data["sections"].append({
+                        "heading": t("تفاصيل البنود والأسعار", "Item Details & Pricing"),
+                        "content": items_content
+                    })
+                    
+                    pdf_bytes = generate_branded_pdf(pdf_data, brand_data=brand)
+                    if pdf_bytes:
+                         st.download_button(
+                            label=t("✅ اضغط هنا لتحميل ملف الـ PDF", "✅ Click here to download PDF"),
+                            data=pdf_bytes,
+                            file_name="mtse_final_estimate.pdf",
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                    else:
+                        st.error(t("❌ فشل في إنشاء ملف الـ PDF.", "❌ Failed to create PDF file."))
 
             st.info(f"💡 **{t('تحليل المخاطر:', 'Risk Insight:')}** " + 
                     t("الأسعار المقترحة تقريبية لتسهيل العمل فقط. يُفضل التأكد من موردين معتمدين قبل تقديم العرض النهائي للعميل.", 

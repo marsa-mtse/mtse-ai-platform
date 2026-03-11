@@ -6,7 +6,7 @@ import streamlit as st
 from utils import t, render_section_header, validate_password
 from database import update_password, log_activity
 from auth import hash_password, verify_password
-from database import get_user
+from database import get_user, update_user_branding, get_user_branding, get_company_members, update_user_role, is_admin
 
 
 def render():
@@ -21,11 +21,12 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         t("🔐 كلمة المرور", "🔐 Password"),
         t("🌐 اللغة", "🌐 Language"),
         t("🏷️ العلامة البيضاء", "🏷️ White Label"),
-        t("🌍 الدومين", "🌍 Domain")
+        t("🌍 الدومين", "🌍 Domain"),
+        t("👥 الفريق", "👥 Team")
     ])
 
     # ==============================
@@ -100,39 +101,63 @@ def render():
     with tab3:
         render_section_header(t("وضع العلامة البيضاء", "White Label Mode"), "🏷️")
 
-        if st.session_state.plan != "Business":
+        if st.session_state.plan not in ["Command", "Business"]:
             st.warning(t(
-                "هذه الميزة متاحة فقط لخطة Business",
-                "This feature is only available for the Business plan"
+                "هذه الميزة متاحة فقط لخطة Command فأعلى",
+                "This feature is only available for the Command plan and above"
             ))
         else:
+            # Load existing branding
+            brand = get_user_branding(username) or {}
+            
             white_label_name = st.text_input(
-                t("اسم العلامة التجارية", "Brand Name"),
+                t("اسم العلامة التجارية / الشركة", "Brand Name / Company"),
+                value=brand.get("name", ""),
                 key="wl_name"
             )
+            
+            # Color selector
+            white_label_color = st.color_picker(
+                t("لون السمة الرئيسي (Theme Color)", "Primary Theme Color"),
+                value=brand.get("color", "#1a73e8"),
+                key="wl_color"
+            )
+
             white_label_logo = st.file_uploader(
-                t("رفع الشعار", "Upload Logo"),
+                t("رفع شعار مخصص (Custom Logo)", "Upload Custom Logo"),
                 type=["png", "jpg", "jpeg"],
                 key="wl_logo"
             )
 
-            if white_label_name:
+            # Preview
+            col_pre1, col_pre2 = st.columns([1, 2])
+            with col_pre1:
+                if white_label_logo:
+                    st.image(white_label_logo, width=120)
+                elif brand.get("logo"):
+                    import base64
+                    st.image(f"data:image/png;base64,{brand['logo']}", width=120)
+                else:
+                    st.info(t("لا يوجد شعار", "No logo"))
+            
+            with col_pre2:
                 st.markdown(f"""
-                <div class="glass-card" style="text-align:center;">
-                    <h2>{white_label_name}</h2>
-                    <p style="color:#94a3b8;">{t("معاينة العلامة التجارية", "Brand Preview")}</p>
+                <div style="padding:10px; border-left: 5px solid {white_label_color}; background:rgba(255,255,255,0.05); border-radius:5px;">
+                    <h4 style="margin:0; color:{white_label_color};">{white_label_name if white_label_name else "Brand Name"}</h4>
+                    <p style="font-size:0.8rem; color:#94a3b8; margin:5px 0 0 0;">{t("معاينة شكل الترويسة في التقارير", "Report Header Preview")}</p>
                 </div>
                 """, unsafe_allow_html=True)
 
-            if white_label_logo:
-                st.image(white_label_logo, width=150)
-
-            if st.button(t("حفظ إعدادات العلامة", "Save Brand Settings"), use_container_width=True):
-                st.session_state["white_label"] = {
-                    "name": white_label_name,
-                    "has_logo": white_label_logo is not None
-                }
-                st.success(t("تم الحفظ ✅ (وضع المحاكاة)", "Saved ✅ (Simulation Mode)"))
+            if st.button(t("💾 حفظ كافّة إعدادات العلامة", "💾 Save All Brand Settings"), use_container_width=True):
+                logo_b64 = brand.get("logo")
+                if white_label_logo:
+                    import base64
+                    logo_b64 = base64.b64encode(white_label_logo.getvalue()).decode()
+                
+                update_user_branding(username, white_label_name, logo_b64, white_label_color)
+                log_activity(username, f"Updated branding: {white_label_name}")
+                st.success(t("تم حفظ إعدادات علامتك التجارية بنجاح! ✅", "Brand settings saved successfully! ✅"))
+                st.rerun()
 
     # ==============================
     # CUSTOM DOMAIN
@@ -173,8 +198,41 @@ def render():
                     ))
 
     # ==============================
-    # EMAIL CAMPAIGN SIMULATION
+    # TEAM MANAGEMENT (RBAC)
     # ==============================
+
+    with tab5:
+        render_section_header(t("إدارة الفريق والوكالة", "Team & Agency Management"), "👥")
+        
+        user_info = get_user(username)
+        company = user_info.get("company", t("مستقل", "Independent"))
+        
+        st.markdown(f"**{t('الشركة / الوكالة:', 'Company / Agency:')}** `{company}`")
+        
+        members = get_company_members(company)
+        
+        if not members:
+            st.warning(t("لا توجد بيانات لأعضاء الفريق حالياً.", "No team members found for this company."))
+        else:
+            for member in members:
+                col_m, col_r, col_a = st.columns([2, 1, 1])
+                with col_m:
+                    st.write(f"👤 **{member['username']}**")
+                with col_r:
+                    st.write(f"`{member['role']}`")
+                with col_a:
+                    if is_admin(username) and member['username'] != username:
+                        new_role = st.selectbox(
+                            t("تعديل الصلاحية", "Edit Role"),
+                            ["Admin", "Editor", "Viewer"],
+                            index=["Admin", "Editor", "Viewer"].index(member['role']),
+                            key=f"role_{member['username']}"
+                        )
+                        if new_role != member['role']:
+                            update_user_role(member['username'], new_role)
+                            st.rerun()
+                    else:
+                        st.write("---")
 
     st.markdown("---")
     render_section_header(t("حملات البريد الإلكتروني", "Email Campaigns"), "📧")
