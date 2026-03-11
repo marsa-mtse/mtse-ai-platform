@@ -28,12 +28,16 @@ class VideoAnalyzer:
         if api_key:
             genai.configure(api_key=api_key.strip())
         
-        # Use Gemini 1.5 Pro for its superior video understanding
-        self.model_name = "gemini-1.5-pro"
+        # Discover available models
+        self.available_models = []
         try:
-            self.model = genai.GenerativeModel(self.model_name)
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    self.available_models.append(m.name.replace("models/", ""))
         except:
-            self.model = genai.GenerativeModel("gemini-1.5-flash") # Fallback
+            self.available_models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"]
+        
+        self.groq_api_key = st.secrets.get("GROQ_API_KEY")
 
     def analyze_video(self, video_file_path):
         """Processes video and returns structured marketing intelligence."""
@@ -75,21 +79,29 @@ class VideoAnalyzer:
             }
             """
             
-            response = self.model.generate_content([video_file, prompt])
-            
-            # Clean up the file from AI Cloud
-            genai.delete_file(video_file.name)
-            
-            # Parse JSON
-            txt = response.text.replace("```json", "").replace("```", "").strip()
-            import json
-            start = txt.find("{")
-            end = txt.rfind("}")
-            raw_data = json.loads(txt[start:end+1])
-            
-            # Pydantic Validation
-            validated = VideoAuditModel(**raw_data)
-            return validated.model_dump()
+            last_error = ""
+            for model_name in self.available_models:
+                try:
+                    model = genai.GenerativeModel(model_name)
+                    response = model.generate_content([video_file, prompt])
+                    txt = response.text.replace("```json", "").replace("```", "").strip()
+                    import json
+                    start = txt.find("{")
+                    end = txt.rfind("}")
+                    raw_data = json.loads(txt[start:end+1])
+                    validated = VideoAuditModel(**raw_data)
+                    
+                    try: genai.delete_file(video_file.name)
+                    except: pass
+                    
+                    return validated.model_dump()
+                except Exception as e:
+                    last_error = str(e)
+                    continue
+
+            try: genai.delete_file(video_file.name)
+            except: pass
+            return {"error": f"Video AI failed: {last_error}"}
 
         except Exception as e:
             return {"error": str(e)}

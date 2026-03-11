@@ -38,7 +38,30 @@ class CampaignOrchestrator:
         if api_key:
             genai.configure(api_key=api_key.strip())
         
-        self.model = genai.GenerativeModel("gemini-1.5-pro")
+        # Discover available models
+        self.available_models = []
+        try:
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    self.available_models.append(m.name.replace("models/", ""))
+        except:
+            self.available_models = ["gemini-1.5-pro", "gemini-2.0-flash", "gemini-1.5-flash"]
+        
+        self.groq_api_key = st.secrets.get("GROQ_API_KEY")
+
+    def _call_groq(self, prompt):
+        """Fallback to Groq if Gemini fails."""
+        try:
+            from groq import Groq
+            client = Groq(api_key=self.groq_api_key)
+            completion = client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            raise Exception(f"Groq Fallback Failed: {str(e)}")
 
     def orchestrate(self, product_description, target_audience, primary_goal, budget_limit=None):
         """Generates a complete multichannel marketing campaign."""
@@ -91,22 +114,41 @@ class CampaignOrchestrator:
         }}
         """
         
-        try:
-            response = self.model.generate_content(prompt)
-            txt = response.text.replace("```json", "").replace("```", "").strip()
-            
-            # Extract JSON block
-            import json
-            start = txt.find("{")
-            end = txt.rfind("}")
-            raw_data = json.loads(txt[start:end+1])
-            
-            # Validate with Pydantic
-            validated = CampaignStrategyModel(**raw_data)
-            return validated.model_dump()
-            
-        except Exception as e:
-            return {"error": str(e)}
+        last_error = ""
+        # 1. Try Gemini Rotation
+        for model_name in self.available_models:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+                txt = response.text.replace("```json", "").replace("```", "").strip()
+                
+                # Extract JSON block
+                import json
+                start = txt.find("{")
+                end = txt.rfind("}")
+                raw_data = json.loads(txt[start:end+1])
+                
+                # Validate with Pydantic
+                validated = CampaignStrategyModel(**raw_data)
+                return validated.model_dump()
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+        # 2. Try Groq Fallback
+        if self.groq_api_key:
+            try:
+                txt = self._call_groq(prompt)
+                import json
+                start = txt.find("{")
+                end = txt.rfind("}")
+                raw_data = json.loads(txt[start:end+1])
+                validated = CampaignStrategyModel(**raw_data)
+                return validated.model_dump()
+            except Exception as e:
+                last_error = f"{last_error} | Groq Error: {str(e)}"
+
+        return {"error": f"All AI engines failed: {last_error}"}
 
 def get_orchestrator():
     return CampaignOrchestrator()
