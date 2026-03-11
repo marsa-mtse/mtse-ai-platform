@@ -13,7 +13,7 @@ def run_command(command):
 
 def perform_maintenance():
     print("="*50)
-    print(f"   MTSE v10 AUTO-MAINTENANCE [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]")
+    print(f"   MTSE v11 AUTO-MAINTENANCE [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]")
     print("="*50)
 
     # 1. Run System Health Check
