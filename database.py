@@ -172,6 +172,23 @@ def init_database():
         )
     """)
 
+    # Scheduled Posts (Social Command Queue)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS scheduled_posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            content TEXT NOT NULL,
+            platforms TEXT NOT NULL,
+            media_type TEXT,
+            scheduled_at TEXT NOT NULL,
+            status TEXT DEFAULT 'Queued',
+            created_at TEXT NOT NULL,
+            published_at TEXT,
+            error_message TEXT,
+            FOREIGN KEY (username) REFERENCES users(username)
+        )
+    """)
+
     conn.commit()
 
 
@@ -522,3 +539,84 @@ def is_admin(username):
     """Check if user has Admin privileges."""
     user = get_user(username)
     return user.get("role") == "Admin" if user else False
+
+# ==============================
+# SOCIAL COMMAND QUEUE HELPERS
+# ==============================
+
+def save_scheduled_post(username, content, platforms, media_type, scheduled_at, status="Queued"):
+    """Save a new scheduled post to the queue."""
+    conn = get_connection()
+    platforms_str = ",".join(platforms) if isinstance(platforms, list) else platforms
+    conn.execute(
+        """INSERT INTO scheduled_posts
+           (username, content, platforms, media_type, scheduled_at, status, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (username, content, platforms_str, media_type, scheduled_at, status,
+         datetime.datetime.now().isoformat())
+    )
+    conn.commit()
+
+
+def get_scheduled_posts(username, status_filter=None):
+    """Get scheduled posts for a user with optional status filter."""
+    conn = get_connection()
+    if status_filter:
+        rows = conn.execute(
+            """SELECT id, content, platforms, scheduled_at, status, created_at, error_message
+               FROM scheduled_posts WHERE username=? AND status=?
+               ORDER BY scheduled_at ASC""",
+            (username, status_filter)
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            """SELECT id, content, platforms, scheduled_at, status, created_at, error_message
+               FROM scheduled_posts WHERE username=?
+               ORDER BY scheduled_at DESC LIMIT 50""",
+            (username,)
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def update_post_status(post_id, status, error_message=None):
+    """Update the status of a scheduled post."""
+    conn = get_connection()
+    published_at = datetime.datetime.now().isoformat() if status == "Published" else None
+    conn.execute(
+        """UPDATE scheduled_posts SET status=?, published_at=?, error_message=? WHERE id=?""",
+        (status, published_at, error_message, post_id)
+    )
+    conn.commit()
+
+
+def delete_scheduled_post(post_id, username):
+    """Delete a scheduled post (only if not yet published)."""
+    conn = get_connection()
+    conn.execute(
+        "DELETE FROM scheduled_posts WHERE id=? AND username=? AND status != 'Published'",
+        (post_id, username)
+    )
+    conn.commit()
+
+
+def get_post_stats(username):
+    """Aggregate statistics for a user's social command queue."""
+    conn = get_connection()
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    c1 = conn.execute(
+        "SELECT COUNT(*) as cnt FROM scheduled_posts WHERE username=? AND created_at LIKE ?",
+        (username, f"{today}%")
+    ).fetchone()
+    c2 = conn.execute(
+        "SELECT COUNT(*) as cnt FROM scheduled_posts WHERE username=? AND status='Queued'",
+        (username,)
+    ).fetchone()
+    c3 = conn.execute(
+        "SELECT COUNT(*) as cnt FROM scheduled_posts WHERE username=? AND status='Published'",
+        (username,)
+    ).fetchone()
+    return {
+        "today": c1["cnt"] if c1 else 0,
+        "queued": c2["cnt"] if c2 else 0,
+        "published": c3["cnt"] if c3 else 0,
+    }
