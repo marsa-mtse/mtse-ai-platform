@@ -29,17 +29,12 @@ from views import reports_page
 from views import users_page
 from views import billing_page
 from views import settings_page
-from views import expert_tools_page
-from views import cost_engine_page
-from views import social_analysis_page
-from views import technical_intel_page
-from views import video_intel_page
-from views import campaign_page
 from views import workspace_page
-from views import creative_studio_page
-from views import global_intel_page 
+from views import video_intel_page
+from views import intel_hub_page
+from views import creative_hub_page
+from views import industrial_hub_page
 from views import social_command_page
-from views import combat_ai_page
 
 # ==============================
 # INIT
@@ -210,19 +205,13 @@ with st.sidebar:
 
     nav_items = [
         ("Dashboard", "🏠", t("لوحة التحكم", "Dashboard")),
-        ("Analytics", "📊", t("التحليلات", "Analytics")),
-        ("Expert Tools", "🛠️", t("أدوات النخبة", "Expert Tools")),
-        ("AI Engine", "🤖", t("محرك AI", "AI Engine")),
-        ("Workspace", "🏢", t("مساحة العمل", "Workspace Hub")),
-        ("Cost Engine", "💰", t("محرك التكاليف", "Cost Engine")),
-        ("Social Sniper", "🎯", t("قناص السوشيال", "Social Sniper")),
-        ("Global Intelligence", "🌐", t("الاستخبارات العالمية", "Global Intelligence")),
-        ("Creative Studio", "🎭", f"{t('ستوديو الإبداع', 'Creative Studio')} ✨"),
-        ("Social Command", "🚀", f"{t('التنفيذ التلقائي', 'Autonomous Command')} ✨"),
-        ("Combat AI", "⚔️", f"{t('الذكاء القتالي', 'Combat AI')} ✨"),
-        ("Campaign Orchestrator", "🧠", t("مايسترو الحملات", "Campaign Orchestrator")),
+        ("Intel Hub", "🌐", t("مركز الاستخبارات", "Intelligence Hub")),
+        ("Creative War Room", "🎭", t("غرفة الحرب الإبداعية", "Creative War Room")),
+        ("Industrial Hub", "⚙️", t("المركز الصناعي", "Industrial Hub")),
+        ("Analytics", "📊", t("التحليلات المتكاملة", "Unified Analytics")),
+        ("Social Command", "🚀", t("التنفيذ التلقائي", "Social Command")),
         ("Video Intelligence", "📹", t("ذكاء الفيديو", "Video Intelligence")),
-        ("Technical Intel", "📐", t("استخبارات المخططات", "Technical Intel")),
+        ("Workspace", "🏢", t("مساحة العمل", "Workspace Hub")),
         ("Users", "👥", t("المستخدمين", "Users")),
         ("Billing", "💳", t("الفوترة", "Billing")),
         ("Settings", "⚙️", t("الإعدادات", "Settings")),
@@ -268,19 +257,13 @@ page = st.session_state.page
 
 page_map = {
     "Dashboard": dashboard_page,
+    "Intel Hub": intel_hub_page,
+    "Creative War Room": creative_hub_page,
+    "Industrial Hub": industrial_hub_page,
     "Analytics": analytics_page,
-    "Expert Tools": expert_tools_page,
-    "AI Engine": ai_engine_page,
-    "Workspace": workspace_page,
-    "Cost Engine": cost_engine_page,
-    "Social Sniper": social_analysis_page,
-    "Global Intelligence": global_intel_page,
-    "Campaign Orchestrator": campaign_page,
-    "Creative Studio": creative_studio_page,
     "Social Command": social_command_page,
-    "Combat AI": combat_ai_page,
     "Video Intelligence": video_intel_page,
-    "Technical Intel": technical_intel_page,
+    "Workspace": workspace_page,
     "Users": users_page,
     "Billing": billing_page,
     "Settings": settings_page,
