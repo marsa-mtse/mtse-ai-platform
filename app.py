@@ -17,7 +17,7 @@ st.set_page_config(
 # IMPORTS
 # ==============================
 
-from config import PREMIUM_CSS, APP_NAME_AR, APP_NAME_EN
+from config import PREMIUM_CSS, APP_NAME_AR, APP_NAME_EN, BORDER_GLOW
 from database import init_database
 from auth import init_session, login_user, create_default_admin, logout_user
 from utils import t
@@ -36,6 +36,10 @@ from views import technical_intel_page
 from views import video_intel_page
 from views import campaign_page
 from views import workspace_page
+from views import creative_studio_page
+from views import global_intel_page 
+from views import social_command_page
+from views import combat_ai_page
 
 # ==============================
 # INIT
@@ -78,10 +82,10 @@ if not st.session_state.logged_in:
 
     # Logo
     st.markdown(f"""
-    <div class="logo-container">
-        <img src="data:image/png;base64,{st.session_state.get('logo_base64', '')}" class="logo-img">
-        <h1>MTSE Marketing Engine</h1>
-        <p>{t("منصة التسويق الذكية العالمية", "Global Smart Marketing Platform")}</p>
+    <div class="logo-container" style="background: linear-gradient(135deg, #6d28d9 0%, #06b6d4 100%);">
+        <div style="font-size: 5rem; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.4));">🌌</div>
+        <h1 style="background: linear-gradient(to right, #fff, #c4b5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MTSE v11</h1>
+        <p>{t("نظام السيادة الرقمية الفائق", "Hyper Digital Sovereignty OS")}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -167,7 +171,7 @@ if not st.session_state.logged_in:
         # Footer
         st.markdown(f"""
         <div style="text-align:center; color:#94a3b8; margin-top:24px; font-size:0.85rem;">
-            MTSE Marketing Engine v2.0 — {t("جميع الحقوق محفوظة", "All Rights Reserved")} © 2026
+            MTSE Digital Sovereignty v11.0 — {t("جميع الحقوق محفوظة", "All Rights Reserved")} © 2026
         </div>
         """, unsafe_allow_html=True)
 
@@ -181,10 +185,10 @@ if not st.session_state.logged_in:
 with st.sidebar:
     # Logo
     st.markdown(f"""
-    <div style="text-align:center; padding:16px 0;">
-        <div style="font-size:2rem;">📊</div>
-        <h3 style="margin:4px 0;">MTSE</h3>
-        <p style="color:#94a3b8; font-size:0.8rem; margin:0;">{t("منصة التسويق", "Marketing Engine")}</p>
+    <div style="text-align:center; padding:16px 0; background: linear-gradient(to bottom, {BORDER_GLOW}, transparent); border-radius: 20px;">
+        <div style="font-size:2.5rem; filter: drop-shadow(0 0 10px var(--primary));">🌌</div>
+        <h3 style="margin:4px 0; color:var(--primary-light);">MTSE v11</h3>
+        <p style="color:var(--accent); font-size:0.8rem; margin:0; font-weight:bold; letter-spacing:1px;">{t("السيادة الرقمية", "DIGITAL SOVEREIGNTY")}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -212,8 +216,12 @@ with st.sidebar:
         ("Workspace", "🏢", t("مساحة العمل", "Workspace Hub")),
         ("Cost Engine", "💰", t("محرك التكاليف", "Cost Engine")),
         ("Social Sniper", "🎯", t("قناص السوشيال", "Social Sniper")),
+        ("Global Intelligence", "🌐", t("الاستخبارات العالمية", "Global Intelligence")),
+        ("Creative Studio", "🎭", f"{t('ستوديو الإبداع', 'Creative Studio')} ✨"),
+        ("Social Command", "🚀", f"{t('التنفيذ التلقائي', 'Autonomous Command')} ✨"),
+        ("Combat AI", "⚔️", f"{t('الذكاء القتالي', 'Combat AI')} ✨"),
         ("Campaign Orchestrator", "🧠", t("مايسترو الحملات", "Campaign Orchestrator")),
-        ("Video Intelligence", "📹", t("ذكاء الفيديو", "Video Intelligence")), # Added Video Intelligence
+        ("Video Intelligence", "📹", t("ذكاء الفيديو", "Video Intelligence")),
         ("Technical Intel", "📐", t("استخبارات المخططات", "Technical Intel")),
         ("Users", "👥", t("المستخدمين", "Users")),
         ("Billing", "💳", t("الفوترة", "Billing")),
@@ -244,6 +252,14 @@ with st.sidebar:
             st.session_state.lang = "EN"
             st.rerun()
 
+    st.markdown("---")
+    # v11 Dual-Core Toggle
+    current_mode = st.session_state.get("theme_mode", "Quantum Dark")
+    new_mode = "Solar Light" if current_mode == "Quantum Dark" else "Quantum Dark"
+    if st.button(f"{'☀️' if current_mode == 'Quantum Dark' else '🌙'} {t('الوضع ' + ('المضيء' if current_mode == 'Quantum Dark' else 'المظلم'), 'Switch to ' + new_mode)}", use_container_width=True):
+        st.session_state.theme_mode = new_mode
+        st.rerun()
+
 # ==============================
 # PAGE ROUTING
 # ==============================
@@ -258,7 +274,11 @@ page_map = {
     "Workspace": workspace_page,
     "Cost Engine": cost_engine_page,
     "Social Sniper": social_analysis_page,
+    "Global Intelligence": global_intel_page,
     "Campaign Orchestrator": campaign_page,
+    "Creative Studio": creative_studio_page,
+    "Social Command": social_command_page,
+    "Combat AI": combat_ai_page,
     "Video Intelligence": video_intel_page,
     "Technical Intel": technical_intel_page,
     "Users": users_page,
