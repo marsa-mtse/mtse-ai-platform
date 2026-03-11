@@ -86,11 +86,6 @@ def render():
                 from database import update_plan
                 update_plan(username, "Explorer")
                 st.rerun()
-'url']})")
-                    else:
-                        st.error(f"Error: {result['message']}")
-            else:
-                st.button(t("الخطة الحالية", "Current Plan"), key=f"curr_{plan['name']}", disabled=True, use_container_width=True)
 
     # Invoices history mock
     st.markdown("---")

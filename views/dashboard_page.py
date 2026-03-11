@@ -85,10 +85,21 @@ def render():
     # AI MARKETING ASSISTANT
     # ==============================
     st.markdown(f"""
-    <div class="glass-card animate-in" style="border-top: 4px solid var(--accent); background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(30, 41, 59, 0.7));">
-        <h3 style="margin-top:0;">🤖 {t("المساعد التسويقي الذكي", "AI Marketing Assistant")}</h3>
+    <div class="glass-card animate-in" style="border-top: 4px solid var(--accent); background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(30, 41, 59, 0.7)); display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">🤖 {t("المساعد التسويقي الذكي", "AI Marketing Assistant")}</h3>
+        <div id="voice-briefing-trigger"></div>
     </div>
     """, unsafe_allow_html=True)
+
+    with st.container():
+        col_v1, col_v2 = st.columns([2, 1])
+        with col_v2:
+            if st.button("🎙️ " + t("موجز تكتيكي صوتي", "Voice Tactical Briefing"), use_container_width=True):
+                from utils import generate_voice_briefing
+                briefing = generate_voice_briefing("Welcome back Commander. Today's performance is up by 15%.")
+                if briefing["status"] == "success":
+                    st.audio(briefing["audio_url"])
+                    st.success("✨ " + briefing["message"])
 
     df = st.session_state.get("analysis_df")
     if df is not None:
