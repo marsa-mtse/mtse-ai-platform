@@ -124,6 +124,32 @@ def render():
                 s_time = st.time_input(t("وقت النشر", "Publish Time"), key="sc_time")
                 scheduled_time = datetime.datetime.combine(s_date, s_time)
 
+            # ── Publishing status hint ─────────────────────────────
+            if meta_token and meta_page_id:
+                st.success(
+                    t("✅ النشر الفعلي مفعّل — سيُرسَل مباشرةً إلى Meta Graph API.",
+                      "✅ Real publishing enabled — will post directly via Meta Graph API.")
+                )
+            else:
+                st.info(
+                    t("⏳ بدون API Token — المنشور سيُحفظ في قائمة الانتظار. فعّل النشر من تبويب 🔑 إعداد API.",
+                      "⏳ No API Token configured — post will be saved to queue. Enable publishing from 🔑 API Config tab.")
+                )
+                with st.expander(t("📋 خطوات تفعيل النشر الفعلي", "📋 How to enable real publishing"), expanded=False):
+                    st.markdown("""
+**الخطوة 1:** اذهب إلى [developers.facebook.com/apps](https://developers.facebook.com/apps)  
+← أنشئ تطبيقاً جديداً من نوع **Business**
+
+**الخطوة 2:** من **Graph API Explorer**  
+← اختر تطبيقك ← اختر صفحتك ← اطلب صلاحية `pages_manage_posts`  
+← انسخ الـ **Page Access Token**
+
+**الخطوة 3:** ارجع هنا واضغط تبويب **🔑 إعداد API**  
+← الصق الـ Token + الـ Page ID ← اضغط حفظ
+
+✅ النشر سيصبح حقيقياً فوراً!
+                    """)
+
             if st.button(t("🚀 إطلاق المنشور", "🚀 Launch Post"), use_container_width=True, type="primary"):
                 if not content:
                     st.error(t("يرجى كتابة محتوى المنشور أولاً.", "Please write post content first."))
