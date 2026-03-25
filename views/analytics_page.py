@@ -13,6 +13,7 @@ from integrations.youtube_api import YouTubeAnalyticsAPI
 from billing.plans import PlanManager
 from ai_engine.universal_analyzer import analyze_universal_link, generate_strategic_insights, get_api_status
 from ai_engine.multimodal_processor import get_processor
+from services.social_connector import social_hub
 
 def render():
     """Render the advanced Analytics page with Integrations."""
@@ -279,26 +280,22 @@ def render():
         if not plan_manager.can_access_integrations():
             st.warning(t("التكامل مع المنصات متاح لخطط Pro و Business.", "API integrations available to Pro and Business plans."))
         else:
-            api = TikTokAdsAPI(access_token="simulated_token")
-            st.success(api.test_connection()["message"])
+            metrics = social_hub.get_realtime_metrics("TikTok")
+            st.success(t("تم الاتصال بمحرك TikTok اللحظي ✅", "Connected to Real-time TikTok Engine ✅"))
             
-            if st.button(t("🔄 تحديث بيانات TikTok", "🔄 Refresh TikTok Data")):
-                df = api.fetch_campaign_performance(days=14)
-                
-                total_spend = df["spend"].sum()
-                total_impressions = df["impressions"].sum()
-                avg_cpa = df["cpa"].mean()
-                
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Total Spend", f"${total_spend:,.2f}")
-                c2.metric("Impressions", f"{total_impressions:,}")
-                c3.metric("Avg CPA", f"${avg_cpa:,.2f}")
-                
-                fig = px.bar(df, x="date", y="spend", color="campaign_name", title="Spend per Campaign", template="plotly_dark")
-                fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig, use_container_width=True)
-                
-                st.dataframe(df, use_container_width=True)
+            c1, c2, c3 = st.columns(3)
+            c1.metric(t("المشاهدات اللحظية", "Live Views"), metrics["live_views"], metrics["trend"])
+            c2.metric(t("نسبة التفاعل", "Engagement Rate"), metrics["engagement"])
+            c3.metric(t("التوقيت", "Sync Time"), metrics["timestamp"])
+            
+            if st.button(t("🔄 تحديث البيانات اللحظية", "🔄 Refresh Live Metrics"), key="refresh_tt"):
+                st.rerun()
+            
+            st.markdown("---")
+            st.markdown(f"### {t('المواضيع الرائجة (MENA)', 'Trending Topics (MENA)')}")
+            trends = social_hub.get_trending_topics()
+            for tr in trends:
+                st.write(f"🔥 **{tr['topic']}** | {t('الحجم:', 'Volume:')} {tr['volume']} | {t('الشعور:', 'Sentiment:')} {tr['sentiment']}")
 
     # ==============================
     # 📸 INSTAGRAM API INTEGRATION
@@ -308,24 +305,18 @@ def render():
         if not plan_manager.can_access_integrations():
             st.warning(t("التكامل متاح لخطط Pro و Business.", "Pro and Business plans required."))
         else:
-            api = InstagramGraphAPI(access_token="simulated")
-            auth_info = api.authenticate()
-            st.info(f"{t('متصل بحساب:', 'Connected as:')} {auth_info['username']}")
+            metrics = social_hub.get_realtime_metrics("Instagram")
+            st.info(f"{t('المتصل الآن:', 'Currently Streaming:')} {metrics['platform']}")
             
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### Reels Performance 🎬")
-                df_reels = api.fetch_reel_performance(limit=5)
-                fig_reels = px.bar(df_reels, x="reel_id", y="engagement_rate", color="plays", title="Top Reels Engagement (%)", template="plotly_dark")
-                fig_reels.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig_reels, use_container_width=True)
+                st.markdown("### Reels Insights 🎬")
+                render_kpi_card(t("تفاعل الريلز", "Reels Engagement"), metrics["engagement"], metrics["trend"])
             with col2:
-                st.markdown("### Audience Demo 🌍")
-                demo = api.get_audience_demographics()
-                df_demo = pd.DataFrame(list(demo['cities'].items()), columns=['City', 'Percentage'])
-                fig_dem = px.pie(df_demo, names='City', values='Percentage', hole=0.4, template="plotly_dark", title="Audience by City")
-                fig_dem.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-                st.plotly_chart(fig_dem, use_container_width=True)
+                st.markdown("### Forecast 📈")
+                forecast = social_hub.get_campaign_forecast(500)
+                st.write(f"🎯 {t('الوصول المتوقع:', 'Predicted Reach:')} {forecast['reach']:,}")
+                st.write(f"💰 {t('العائد المتوقع:', 'Predicted ROI:')} {forecast['roi']}")
 
     # ==============================
     # ▶️ YOUTUBE API INTEGRATION

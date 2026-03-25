@@ -4,6 +4,7 @@
 # ==========================================================
 
 import streamlit as st
+import base64
 
 # Page config MUST be the first Streamlit command
 st.set_page_config(
@@ -24,7 +25,6 @@ from utils import t
 
 from views import dashboard_page
 from views import analytics_page
-from views import ai_engine_page
 from views import reports_page
 from views import users_page
 from views import billing_page
@@ -33,9 +33,12 @@ from views import workspace_page
 from views import video_intel_page
 from views import intel_hub_page
 from views import creative_hub_page
-from views import industrial_hub_page
-from views import social_command_page
+from views import campaign_builder_view
 from views import owner_panel_page
+
+# v12.0 New Infrastructure
+from ai_engine.router import router
+from services.social_connector import social_hub
 
 # ==============================
 # INIT
@@ -51,49 +54,50 @@ create_default_admin()
 # Initialize session
 init_session()
 
-# Load Logo Base64
-import base64
+# Load Assets
 try:
-    with open("mtse_logo.png", "rb") as f:
-        st.session_state.logo_base64 = base64.b64encode(f.read()).decode()
+    with open("assets/v12_hero.png", "rb") as f:
+        st.session_state.hero_base64 = base64.b64encode(f.read()).decode()
+    with open("assets/v12_assistant.png", "rb") as f:
+        st.session_state.asst_base64 = base64.b64encode(f.read()).decode()
 except:
-    st.session_state.logo_base64 = ""
+    st.session_state.hero_base64 = ""
+    st.session_state.asst_base64 = ""
 
 # ==============================
 # LOGIN SCREEN
 # ==============================
 
 if not st.session_state.logged_in:
-
-    # Language switcher on login page
-    col_spacer, col_ar, col_en = st.columns([6, 1, 1])
-    with col_ar:
-        if st.button("🇪🇬 عربي", key="login_ar"):
-            st.session_state.lang = "AR"
-            st.rerun()
-    with col_en:
-        if st.button("🇺🇸 EN", key="login_en"):
-            st.session_state.lang = "EN"
-            st.rerun()
-
-    # Logo
+    # --- V12 PREMIUM LANDING PAGE ---
+    hero_img = f"data:image/png;base64,{st.session_state.hero_base64}" if st.session_state.get("hero_base64") else ""
     st.markdown(f"""
-    <div class="logo-container" style="background: linear-gradient(135deg, #6d28d9 0%, #06b6d4 100%);">
-        <div style="font-size: 5rem; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.4));">🌌</div>
-        <h1 style="background: linear-gradient(to right, #fff, #c4b5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MTSE v11</h1>
-        <p>{t("نظام السيادة الرقمية الفائق", "Hyper Digital Sovereignty OS")}</p>
+    <div class="hero-container" style="background: url('{hero_img}') center/cover;">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 style="font-size: 3.5rem; margin-bottom: 10px;">MTSE AI Platform v12</h1>
+            <p style="font-size: 1.2rem; color: #cbd5e1; max-width: 600px; margin: 0 auto 30px;">
+                {t("نظام السيادة الرقمية المتكامل - الجيل القادم من إدارة الحملات والذكاء التسويقي", "The Unified Digital Sovereignty System - Next-Gen Campaign Management & Marketing Intelligence")}
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <a href="#login" style="text-decoration: none;">
+                    <div style="background: var(--primary); color: white; padding: 12px 30px; border-radius: 12px; font-weight: bold; cursor: pointer;">
+                        {t("ابدأ الآن", "Get Started")}
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Login form
-    st.markdown("")
-
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1.5, 1])
 
     with col2:
+        st.markdown('<div id="login"></div>', unsafe_allow_html=True)
+        # Custom login card
         st.markdown(f"""
-        <div class="glass-card" style="padding:16px; margin-bottom:16px;">
-            <h3 style="text-align:center; margin-bottom:0;">{t("مرحباً بك في المنصة الذكية", "Welcome to the Smart Platform")}</h3>
+        <div class="glass-card" style="margin-top: -50px; position: relative; z-index: 100;">
+            <h3 style="text-align:center; margin-bottom:20px;">{t("الولوج للمنصة الذكية", "Secure Intelligence Access")}</h3>
         </div>
         """, unsafe_allow_html=True)
         
@@ -200,22 +204,19 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # Navigation
+    # Navigation Hubs v12.0
     if "page" not in st.session_state:
         st.session_state.page = "Dashboard"
 
+    st.markdown(f"### {t('استكشاف المحاور', 'Explore Hubs')}")
+    
     nav_items = [
-        ("Dashboard", "🏠", t("لوحة التحكم", "Dashboard")),
-        ("Intel Hub", "🌐", t("مركز الاستخبارات", "Intelligence Hub")),
-        ("Creative War Room", "🎭", t("غرفة الحرب الإبداعية", "Creative War Room")),
-        ("Industrial Hub", "⚙️", t("المركز الصناعي", "Industrial Hub")),
-        ("Analytics", "📊", t("التحليلات المتكاملة", "Unified Analytics")),
-        ("Social Command", "🚀", t("التنفيذ التلقائي", "Social Command")),
-        ("Video Intelligence", "📹", t("ذكاء الفيديو", "Video Intelligence")),
-        ("Workspace", "🏢", t("مساحة العمل", "Workspace Hub")),
-        ("Users", "👥", t("المستخدمين", "Users")),
-        ("Billing", "💳", t("الفوترة", "Billing")),
-        ("Settings", "⚙️", t("الإعدادات", "Settings")),
+        ("Dashboard", "🏠", t("نظرة عامة", "Control Center")),
+        ("Strategy Hub", "🧠", t("محور الاستراتيجية", "Strategy Hub")),
+        ("Campaign Hub", "🚀", t("مركز الحملات", "Campaign Hub")),
+        ("Creative Studio", "🎥", t("استوديو الإبداع", "Creative Studio")),
+        ("Real-time Analytics", "📊", t("التحليلات اللحظية", "Live Analytics")),
+        ("Workspace", "🏢", t("مساحة العمل", "Workspace")),
     ]
 
     from config import ADMIN_DEFAULT_USERNAME
@@ -235,6 +236,17 @@ with st.sidebar:
 
     st.markdown("---")
 
+    # Utility Section
+    st.markdown("---")
+    
+    c_about, c_asst = st.columns(2)
+    with c_about:
+        if st.button("ℹ️ " + t("عن المنصة", "About"), use_container_width=True):
+            st.session_state.show_about = not st.session_state.get("show_about", False)
+    with c_asst:
+        if st.button("🤖 " + t("المساعد", "AI"), use_container_width=True):
+            st.session_state.show_assistant = not st.session_state.get("show_assistant", False)
+
     # Language toggle in sidebar
     col1, col2 = st.columns(2)
     with col1:
@@ -247,11 +259,15 @@ with st.sidebar:
             st.rerun()
 
     st.markdown("---")
-    # v11 Dual-Core Toggle
+    # v12 Dual-Core Toggle
     current_mode = st.session_state.get("theme_mode", "Quantum Dark")
     new_mode = "Solar Light" if current_mode == "Quantum Dark" else "Quantum Dark"
     if st.button(f"{'☀️' if current_mode == 'Quantum Dark' else '🌙'} {t('الوضع ' + ('المضيء' if current_mode == 'Quantum Dark' else 'المظلم'), 'Switch to ' + new_mode)}", use_container_width=True):
         st.session_state.theme_mode = new_mode
+        st.rerun()
+
+    if st.button("🔴 " + t("خروج", "Logout"), use_container_width=True):
+        logout_user()
         st.rerun()
 
 # ==============================
@@ -263,19 +279,41 @@ page = st.session_state.page
 page_map = {
     "Owner Panel": owner_panel_page,
     "Dashboard": dashboard_page,
-    "Intel Hub": intel_hub_page,
-    "Creative War Room": creative_hub_page,
-    "Industrial Hub": industrial_hub_page,
-    "Analytics": analytics_page,
+    "Strategy Hub": intel_hub_page,
+    "Creative Studio": creative_hub_page,
+    "Real-time Analytics": analytics_page,
     "Social Command": social_command_page,
-    "Video Intelligence": video_intel_page,
+    "Campaign Hub": campaign_builder_view,
     "Workspace": workspace_page,
-    "Users": users_page,
-    "Billing": billing_page,
-    "Settings": settings_page,
 }
 
 if page in page_map:
+    # Handle Overlays first
+    if st.session_state.get("show_about"):
+        st.markdown(f"""
+        <div class="glass-card animate-in" style="border-left: 5px solid var(--primary);">
+            <h2>{t("عن منصة MTSE AI v12", "About MTSE AI v12")}</h2>
+            <p>{t("المنصة الرائدة في الشرق الأوسط لإدارة الحملات التسويقية والذكاء الاصطناعي السيادي.", "The leading MENA platform for marketing campaign management and sovereign AI intelligence.")}</p>
+            <ul>
+                <li>{t("أتمتة المحتوى عبر TikTok و Instagram", "Content automation for TikTok & Instagram")}</li>
+                <li>{t("تحليلات لحظية وتنبؤات ذكية", "Real-time analytics & smart predictions")}</li>
+                <li>{t("محرك إبداعي لإنتاج الفيديوهات والمقالات", "Creative engine for video & article production")}</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    if st.session_state.get("show_assistant"):
+        with st.sidebar:
+            asst_avatar = f"data:image/png;base64,{st.session_state.asst_base64}" if st.session_state.get("asst_base64") else ""
+            st.markdown(f"""
+            <div style="text-align:center; padding:10px;">
+                <img src="{asst_avatar}" width="80" style="border-radius:50%; border: 2px solid var(--primary); box-shadow: var(--neon-glow);">
+                <h3 style="margin-top:10px;">🤖 {t('المساعد الذكي v12', 'Smart Assistant v12')}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            st.info(t("كيف يمكنني مساعدتك في استراتيجيتك التسويقية اليوم؟", "How can I help with your marketing strategy today?"))
+            st.chat_input(t("اسأل المساعد...", "Ask the Assistant..."))
+
     page_map[page].render()
 else:
     dashboard_page.render()
