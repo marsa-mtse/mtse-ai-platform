@@ -36,9 +36,9 @@ def render():
     col1, col2, col3 = st.columns(3)
     
     plans_info = [
-        {"name": "Starter", "price": PLAN_PRICING["Starter"], "features": [t("التحليل العالمي المنفرد", "Single Omni-Analysis"), t("5 حملات تسويقية/شهر", "5 AI Campaigns/mo"), t("دعم المجتمع", "Community Support")]},
+        {"name": "Starter", "price": PLAN_PRICING["Starter"], "features": [t("بناء الحملات (5/شهر)", "AI Campaign Builder (5/mo)"), t("لوحة التحليلات", "Analytics Dashboard"), t("1 ملف شخصي اجتماعي", "1 Social Profile")]},
         {"name": "Pro", "price": PLAN_PRICING["Pro"], "features": [t("استوديو الصور (DALL-E 3)", "AI Image Studio (DALL-E 3)"), t("محرك نصوص الفيديو", "Video Script Engine"), t("حملات البريد الإلكتروني", "Email Campaigns"), t("5 ملفات شخصية اجتماعية", "5 Social Profiles")]},
-        {"name": "Command", "price": PLAN_PRICING["Command"], "features": [t("مركز قيادة المشاعر", "Sentiment Command"), t("التنبؤ بالاتجاهات (Trends)", "Trend Predictor"), t("العلامة البيضاء (White Label)", "White Label Engine"), t("دعم مخصص 24/7", "Dedicated Elite Support")]}
+        {"name": "Command", "price": PLAN_PRICING["Command"], "features": [t("توقع الاتجاهات (90 يوم)", "Trend Forecaster (90-day)"), t("تحليل استراتيجي عميق", "Strategy Deep Dive"), t("تقارير العلامة البيضاء", "White-label Reports"), t("ملفات شخصية غير محدودة", "Unlimited Profiles")]}
     ]
     
     cols = [col1, col2, col3]
