@@ -210,17 +210,19 @@ if not st.session_state.logged_in:
     for col, (name, icon, price, popular, feats) in zip([p1, p2, p3], plans):
         with col:
             popular_html = f'<div class="popular-badge">{t("الأكثر طلباً", "POPULAR")}</div>' if popular else ''
-            feats_html = "".join(f"<div style='margin:8px 0; font-size:0.85rem; color:#94a3b8;'>✅ {f}</div>" for f in feats)
             currency_symbol = t("ج.م", "EGP")
+            feats_html = "".join([f"<div style='margin:8px 0; font-size:0.85rem; color:#94a3b8;'>✅ {f}</div>" for f in feats])
             
             st.markdown(f"""
-            <div class="pricing-card {'popular' if popular else ''}" style="min-height:350px;">
+            <div class="pricing-card {'popular' if popular else ''}" style="min-height:420px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 32px 20px;">
                 {popular_html}
                 <div style="font-size:2.5rem; margin-bottom:8px;">{icon}</div>
-                <div style="font-size:1.2rem; font-weight:700; color:{'#a78bfa' if popular else 'var(--text-primary)'};">{name}</div>
-                <div class="price-amount" style="direction:ltr;">{price} <span style="font-size:1.2rem;">{currency_symbol}</span></div>
+                <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary); margin-bottom: 8px;">{name}</div>
+                <div class="price-amount" style="direction:ltr; font-size: 2.8rem; font-weight: 800; margin-bottom: 4px;">{price} <span style="font-size:1.2rem;">{currency_symbol}</span></div>
                 <div style="color:#64748b; font-size:0.8rem; margin-bottom:16px;">/{t('شهر', 'month')}</div>
-                {feats_html}
+                <div style="width: 100%; text-align: left; padding-left: 10px;">
+                    {feats_html}
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
