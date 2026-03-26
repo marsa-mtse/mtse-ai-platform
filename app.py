@@ -183,36 +183,49 @@ if not st.session_state.logged_in:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Pricing Preview
+    # Pricing Section (1 Free + 2 Paid)
     st.markdown(f"<div style='text-align:center; margin:32px 0 20px;'><h2 style='color:{PRIMARY_LIGHT}; font-weight:800;'>💎 {t('خطط الاشتراك', 'Subscription Plans')}</h2></div>", unsafe_allow_html=True)
 
     p1, p2, p3 = st.columns(3)
     plans = [
-        ("Explorer", "⚡", "399", False, ["10 " + t("تقارير/شهر", "Reports/month"), "AI Campaign Builder", "5 " + t("ملفات اجتماعية", "Social Profiles")]),
-        ("Strategist", "⚡", "899", True, ["200 " + t("تقارير/شهر", "Reports/month"), "AI Image Studio", "Competitor Intel", "25 " + t("ملفات اجتماعية", "Social Profiles")]),
-        ("Command", "⚡", "1999", False, [t("غير محدود", "Unlimited") + " " + t("تقارير", "Reports"), "AI Video Engine", "Trend Forecaster", t("غير محدود", "Unlimited") + " " + t("ملفات اجتماعية", "Social Profiles"), "White-label"]),
+        ("Starter", "🆓", "0", False, [
+            "AI Campaign Builder (5/mo)", 
+            "Analytics Dashboard", 
+            "1 Social Profile"
+        ]),
+        ("Pro", "⚡", "299", True, [
+            "AI Image Studio (DALL-E 3)", 
+            "Video Script Engine", 
+            "Email Campaigns",
+            "5 Social Profiles"
+        ]),
+        ("Command", "👑", "799", False, [
+            "Trend Forecaster (90-day)", 
+            "Strategy Deep Dive", 
+            "White-label Reports",
+            "Unlimited Profiles"
+        ]),
     ]
+    
     for col, (name, icon, price, popular, feats) in zip([p1, p2, p3], plans):
         with col:
-            popular_html = '<div class="popular-badge">POPULAR</div>' if popular else ''
+            popular_html = f'<div class="popular-badge">{t("الأكثر طلباً", "POPULAR")}</div>' if popular else ''
             feats_html = "".join(f"<div style='margin:8px 0; font-size:0.85rem; color:#94a3b8;'>✅ {f}</div>" for f in feats)
-            
-            # Use appropriate currency symbol based on language, but default to EGP logic as requested
             currency_symbol = t("ج.م", "EGP")
             
-            html_content = f"""
-<div class="pricing-card {'popular' if popular else ''}" style="min-height:300px;">
-{popular_html}
-<div style="font-size:2rem; margin-bottom:8px;">{icon}</div>
-<div style="font-size:1.1rem; font-weight:700; color:{'#a78bfa' if popular else 'var(--text-primary)'};">{name}</div>
-<div class="price-amount" style="direction:ltr;">{price} <span style="font-size:1.2rem;">{currency_symbol}</span></div>
-<div style="color:#64748b; font-size:0.8rem; margin-bottom:16px;">/{t('شهر', 'month')}</div>
-{feats_html}
-</div>
-"""
-            st.markdown(html_content, unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="pricing-card {'popular' if popular else ''}" style="min-height:350px;">
+                {popular_html}
+                <div style="font-size:2.5rem; margin-bottom:8px;">{icon}</div>
+                <div style="font-size:1.2rem; font-weight:700; color:{'#a78bfa' if popular else 'var(--text-primary)'};">{name}</div>
+                <div class="price-amount" style="direction:ltr;">{price} <span style="font-size:1.2rem;">{currency_symbol}</span></div>
+                <div style="color:#64748b; font-size:0.8rem; margin-bottom:16px;">/{t('شهر', 'month')}</div>
+                {feats_html}
+            </div>
+            """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
+
 
     # Login Form
     st.markdown(f"<div id='login'></div>", unsafe_allow_html=True)

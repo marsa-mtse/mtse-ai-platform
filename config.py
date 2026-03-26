@@ -8,24 +8,46 @@ import streamlit as st
 # ==============================
 
 PLAN_LIMITS = {
-    "Explorer": {"reports": 15, "uploads": 15, "ai_calls": 50},
-    "Strategist": {"reports": 200, "uploads": 200, "ai_calls": 1000},
-    "Command": {"reports": 9999, "uploads": 9999, "ai_calls": 99999}
+    "Starter": {"reports": 5,    "uploads": 5,    "ai_calls": 20},    # Free
+    "Pro":     {"reports": 200,  "uploads": 200,  "ai_calls": 2000},  # Paid
+    "Command": {"reports": 9999, "uploads": 9999, "ai_calls": 99999}  # Paid Enterprise
 }
 
 PLAN_PRICING = {
-    "Explorer": 399,
-    "Strategist": 899,
-    "Command": 1999
+    "Starter": 0,     # مجاني
+    "Pro":     299,   # EGP / month
+    "Command": 799    # EGP / month
 }
 
 PLAN_FEATURES = {
-    "Explorer": ["AI Campaign Builder", "Analytics Dashboard", "5 Social Profiles", "Email Support"],
-    "Strategist": ["Everything in Explorer", "AI Image Studio", "Competitor Intel", "Priority Support", "25 Social Profiles"],
-    "Command": ["Everything in Strategist", "AI Video Engine", "Trend Forecaster", "Dedicated Account Manager", "Unlimited Social Profiles", "White-label Reports"]
+    "Starter": [
+        "AI Campaign Builder (5 campaigns/month)",
+        "Analytics Dashboard",
+        "1 Social Profile",
+        "Community Support"
+    ],
+    "Pro": [
+        "كل مميزات Starter",
+        "AI Image Studio (DALL-E 3)",
+        "Competitor Intel",
+        "Video Script Engine",
+        "Email Campaigns",
+        "5 Social Profiles",
+        "Priority Support"
+    ],
+    "Command": [
+        "كل مميزات Pro",
+        "Trend Forecaster (AI 90-day)",
+        "Strategy Deep Dive",
+        "Unlimited Social Profiles",
+        "White-label PDF Reports",
+        "API Access",
+        "Dedicated Account Manager"
+    ]
 }
 
 AVAILABLE_ROLES = ["Analyst", "Viewer", "Marketing Manager", "Creative Director"]
+
 
 # ==============================
 # AI MODELS CONFIGURATION

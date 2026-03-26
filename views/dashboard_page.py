@@ -38,12 +38,9 @@ def render():
 
     st.markdown("")
 
-    # ==============================
     # KPI CARDS
-    # ==============================
-
     usage = get_usage(username)
-    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["Explorer"])
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["Starter"])
 
     reports_used = usage["reports_used"]
     uploads_used = usage["uploads_used"]

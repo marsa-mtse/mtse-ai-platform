@@ -151,8 +151,8 @@ Write all content in professional and highly engaging Arabic. Ensure 'image_prom
                                 else: st.info(t("✅ تم حفظ المنشور في قائمة الانتظار (Social Command).", "✅ Saved to publishing queue (Social Command)."))
 
         st.markdown("---")
-        if st.button("📥 تحميل الحملة كاملة كملف (Branded PDF)", use_container_width=True):
-            from utils import generate_branded_pdf, t
+        if st.button("📥 " + t("تحميل الحملة كاملة كملف (Branded PDF)", "Download Full Campaign (Branded PDF)"), use_container_width=True):
+            from utils import generate_branded_pdf
             from database import get_user_branding
             
             brand = get_user_branding(st.session_state.username)
