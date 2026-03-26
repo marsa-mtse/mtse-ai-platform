@@ -212,28 +212,33 @@ if not st.session_state.logged_in:
             popular_html = f'<div class="popular-badge">{t("الأكثر طلباً", "POPULAR")}</div>' if popular else ''
             currency_symbol = t("ج.م", "EGP")
             feats_html = "".join([f"<div style='margin:8px 0; font-size:0.85rem; color:#94a3b8;'>✅ {f}</div>" for f in feats])
+            popular_class = 'popular' if popular else ''
+            month_text = t('شهر', 'month')
             
-            markup = """
-            <div class="pricing-card {popular_class}" style="min-height:420px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 32px 20px;">
-                {popular_html}
-                <div style="font-size:2.5rem; margin-bottom:8px;">{icon}</div>
-                <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary); margin-bottom: 8px;">{name}</div>
-                <div class="price-amount" style="direction:ltr; font-size: 2.8rem; font-weight: 800; margin-bottom: 4px;">{price} <span style="font-size:1.2rem;">{currency}</span></div>
-                <div style="color:#64748b; font-size:0.8rem; margin-bottom:16px;">/{month_text}</div>
+            # COMPLETELY STATIC HTML TEMPLATE TO AVOID F-STRING/FORMAT CONFLICTS
+            html_template = """
+            <div class="pricing-card [POPULAR_CLASS]" style="min-height:420px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 32px 20px;">
+                [POPULAR_HTML]
+                <div style="font-size:2.5rem; margin-bottom:8px;">[ICON]</div>
+                <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary); margin-bottom: 8px;">[NAME]</div>
+                <div class="price-amount" style="direction:ltr; font-size: 2.8rem; font-weight: 800; margin-bottom: 4px;">[PRICE] <span style="font-size:1.2rem;">[CURRENCY]</span></div>
+                <div style="color:#64748b; font-size:0.8rem; margin-bottom:16px;">/[MONTH]</div>
                 <div style="width: 100%; text-align: left; padding-left: 10px;">
-                    {feats}
+                    [FEATS]
                 </div>
             </div>
-            """.format(
-                popular_class='popular' if popular else '',
-                popular_html=popular_html,
-                icon=icon,
-                name=name,
-                price=price,
-                currency=currency_symbol,
-                month_text=t('شهر', 'month'),
-                feats=feats_html
-            )
+            """
+            
+            final_html = html_template.replace("[POPULAR_CLASS]", popular_class)\
+                                     .replace("[POPULAR_HTML]", popular_html)\
+                                     .replace("[ICON]", icon)\
+                                     .replace("[NAME]", name)\
+                                     .replace("[PRICE]", str(price))\
+                                     .replace("[CURRENCY]", currency_symbol)\
+                                     .replace("[MONTH]", month_text)\
+                                     .replace("[FEATS]", feats_html)
+            
+            st.markdown(final_html, unsafe_allow_html=True)
             st.markdown(markup, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)

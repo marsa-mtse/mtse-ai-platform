@@ -87,7 +87,7 @@ LOGIN_LOCKOUT_MINUTES = 15
 # APP METADATA
 # ==============================
 
-APP_VERSION = "13.5.3"
+APP_VERSION = "13.5.4"
 APP_NAME_AR = "منصة MTSE v13 - السيادة الرقمية"
 APP_NAME_EN = "MTSE v13 - Digital Sovereignty Hub"
 
