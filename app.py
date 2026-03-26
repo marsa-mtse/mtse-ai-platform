@@ -239,7 +239,6 @@ if not st.session_state.logged_in:
                                      .replace("[FEATS]", feats_html)
             
             st.markdown(final_html, unsafe_allow_html=True)
-            st.markdown(markup, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
