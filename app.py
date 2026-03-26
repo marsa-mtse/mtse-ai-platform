@@ -213,18 +213,28 @@ if not st.session_state.logged_in:
             currency_symbol = t("ج.م", "EGP")
             feats_html = "".join([f"<div style='margin:8px 0; font-size:0.85rem; color:#94a3b8;'>✅ {f}</div>" for f in feats])
             
-            st.markdown(f"""
-            <div class="pricing-card {'popular' if popular else ''}" style="min-height:420px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 32px 20px;">
+            markup = """
+            <div class="pricing-card {popular_class}" style="min-height:420px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 32px 20px;">
                 {popular_html}
                 <div style="font-size:2.5rem; margin-bottom:8px;">{icon}</div>
                 <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary); margin-bottom: 8px;">{name}</div>
-                <div class="price-amount" style="direction:ltr; font-size: 2.8rem; font-weight: 800; margin-bottom: 4px;">{price} <span style="font-size:1.2rem;">{currency_symbol}</span></div>
-                <div style="color:#64748b; font-size:0.8rem; margin-bottom:16px;">/{t('شهر', 'month')}</div>
+                <div class="price-amount" style="direction:ltr; font-size: 2.8rem; font-weight: 800; margin-bottom: 4px;">{price} <span style="font-size:1.2rem;">{currency}</span></div>
+                <div style="color:#64748b; font-size:0.8rem; margin-bottom:16px;">/{month_text}</div>
                 <div style="width: 100%; text-align: left; padding-left: 10px;">
-                    {feats_html}
+                    {feats}
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """.format(
+                popular_class='popular' if popular else '',
+                popular_html=popular_html,
+                icon=icon,
+                name=name,
+                price=price,
+                currency=currency_symbol,
+                month_text=t('شهر', 'month'),
+                feats=feats_html
+            )
+            st.markdown(markup, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
