@@ -1,0 +1,47 @@
+# ==========================================================
+# MTSE Marketing Engine v13 - Dependencies
+# ==========================================================
+
+# Core Streamlit
+streamlit>=1.30.0
+pandas>=2.0.0
+numpy>=1.24.0
+plotly>=5.15.0
+scikit-learn>=1.3.0
+
+# Document Generation
+reportlab>=4.0.0
+fpdf2>=2.7.0
+openpyxl>=3.1.0
+pypdf2>=3.0.0
+
+# Arabic/RTL Support
+arabic-reshaper>=3.0.0
+python-bidi>=0.4.2
+
+# Image Processing
+Pillow>=10.0.0
+
+# AI Providers
+openai>=1.30.0
+google-generativeai>=0.5.0
+anthropic>=0.25.0
+groq>=0.4.0
+
+# HTTP
+httpx>=0.25.0
+requests>=2.31.0
+
+# Payments
+stripe>=7.0.0
+
+# Database
+psycopg2-binary>=2.9.0
+
+# Configuration
+toml>=0.10.2
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# Data parsing (no compilation required)
+beautifulsoup4>=4.12.0
