@@ -302,7 +302,7 @@ if not st.session_state.logged_in:
                             new_username,
                             hash_password(new_password),
                             "Viewer",
-                            "Explorer"
+                            "Starter"
                         )
                         if success:
                             st.success(t("✅ تم إنشاء الحساب! يرجى تسجيل الدخول.", "✅ Account created! Please sign in."))
@@ -338,7 +338,7 @@ if not st.session_state.logged_in:
 page = st.session_state.get("page", "Dashboard")
 username = st.session_state.get("username", "")
 role = st.session_state.get("role", "")
-plan = st.session_state.get("plan", "Explorer")
+plan = st.session_state.get("plan", "Starter")
 
 # ─── SIDEBAR v13 ───
 with st.sidebar:
@@ -352,7 +352,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # User info badge
-    plan_colors = {"Explorer": "#38bdf8", "Strategist": "#a78bfa", "Command": "#f0abfc"}
+    plan_colors = {"Starter": "#38bdf8", "Pro": "#a78bfa", "Command": "#f0abfc"}
     plan_color = plan_colors.get(plan, PRIMARY_LIGHT)
     st.markdown(f"""
     <div class="sidebar-user">
