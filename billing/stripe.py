@@ -10,7 +10,13 @@ class BillingEngine:
     If actual keys are unavailable, simulates the entire process gracefully.
     """
     def __init__(self):
-        self.secret_key = st.secrets.get("STRIPE_SECRET_KEY", None)
+        self.secret_key = None
+        try:
+            from streamlit.errors import StreamlitAPIException
+            self.secret_key = st.secrets.get("STRIPE_SECRET_KEY", None)
+        except Exception:
+            self.secret_key = None
+            
         self.is_live = bool(self.secret_key)
         
         if self.is_live:
