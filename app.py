@@ -351,6 +351,7 @@ with st.sidebar:
         ("Strategy Hub",        "🌐", t("محور الاستراتيجية", "Strategy Hub")),
         ("Campaign Hub",        "🚀", t("مركز الحملات",      "Campaign Hub")),
         ("Creative Studio",     "🎭", t("استوديو الإبداع",   "Creative Studio")),
+        ("Social Command",      "🌍", t("النشر الشامل",      "Omnichannel")),
         ("Real-time Analytics", "📊", t("التحليلات اللحظية", "Live Analytics")),
         ("Workspace",           "🏢", t("مساحة العمل",       "Workspace")),
         ("Billing",             "💳", t("الاشتراك والفواتير", "Billing")),
