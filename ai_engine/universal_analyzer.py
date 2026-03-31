@@ -46,11 +46,18 @@ def format_expert_content(data):
         return "\n".join(lines)
     return str(data)
 
+def _safe_get_secret(key):
+    """Safely retrieve a Streamlit secret, returning None if not found."""
+    try:
+        return st.secrets.get(key)
+    except Exception:
+        return None
+
 def get_api_status():
     """Returns the status of AI backends."""
-    google_key = st.secrets.get("GOOGLE_API_KEY")
-    openai_key = st.secrets.get("OPENAI_API_KEY")
-    groq_key = st.secrets.get("GROQ_API_KEY")
+    google_key = _safe_get_secret("GOOGLE_API_KEY")
+    openai_key = _safe_get_secret("OPENAI_API_KEY")
+    groq_key = _safe_get_secret("GROQ_API_KEY")
     return {
         "google": bool(google_key and genai),
         "openai": bool(openai_key and openai),
@@ -62,8 +69,8 @@ def analyze_universal_link(url, depth="Deep"):
     ELITE OMNI-INTELLIGENCE ENGINE.
     Analyzes ANY content across ALL domains with 10x depth.
     """
-    google_key = st.secrets.get("GOOGLE_API_KEY")
-    openai_key = st.secrets.get("OPENAI_API_KEY")
+    google_key = _safe_get_secret("GOOGLE_API_KEY")
+    openai_key = _safe_get_secret("OPENAI_API_KEY")
     
     # 1. --- GOOGLE GEMINI ELITE STRATEGY ---
     if google_key and genai:
@@ -152,7 +159,7 @@ def analyze_universal_link(url, depth="Deep"):
             pass
 
     # 3. --- GROQ ELITE BACKUP (LLAMA-3 FREE) ---
-    groq_key = st.secrets.get("GROQ_API_KEY")
+    groq_key = _safe_get_secret("GROQ_API_KEY")
     if groq_key:
         if not groq:
             st.session_state.last_ai_error = "Groq library not installed. Please wait for the server to update requirements.txt."
