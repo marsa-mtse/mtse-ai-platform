@@ -146,8 +146,15 @@ def render():
                     else:
                         result = billing.create_checkout_session(plan["name"], plan["price"], username=username)
                         if result["status"] in ["success", "simulation"]:
-                            st.success(t("🔗 الرابط جاهز للدفع", "🔗 Payment Link Ready"))
-                            st.markdown(f'<a href="{result["url"]}" target="_blank" style="display:block;text-align:center;background:{PRIMARY};color:white;padding:10px;border-radius:10px;text-decoration:none;">💳 {t("إتمام الدفع الآن", "Complete Payment Now")}</a>', unsafe_allow_html=True)
+                            st.success(t("🔗 اختر وسيلة الدفع المناسبة", "🔗 Choose Payment Method"))
+                            # New Multiple Payment Gateways Simulation
+                            pcol1, pcol2 = st.columns(2)
+                            with pcol1:
+                                st.markdown(f'<a href="{result["url"]}" target="_blank" style="display:block;text-align:center;background:#000000;color:white;padding:10px;border-radius:10px;text-decoration:none;margin-bottom:8px;font-weight:bold;">🍎 Apple Pay</a>', unsafe_allow_html=True)
+                                st.markdown(f'<a href="{result["url"]}" target="_blank" style="display:block;text-align:center;background:#003087;color:white;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold;">🅿️ PayPal</a>', unsafe_allow_html=True)
+                            with pcol2:
+                                st.markdown(f'<a href="{result["url"]}" target="_blank" style="display:block;text-align:center;background:#20a672;color:white;padding:10px;border-radius:10px;text-decoration:none;margin-bottom:8px;font-weight:bold;">💳 مدى / KNET</a>', unsafe_allow_html=True)
+                                st.markdown(f'<a href="{result["url"]}" target="_blank" style="display:block;text-align:center;background:{PRIMARY};color:white;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold;">🌐 Crypto (USDT)</a>', unsafe_allow_html=True)
 
 
     # Simulation tools for V10 testing

@@ -30,6 +30,8 @@ def render():
 
     company = st.session_state.get("company", "Independent")
     username = st.session_state.username
+    user_role = st.session_state.get("role", "Viewer")
+    is_admin_or_owner = user_role in ["Admin", "Owner"]
 
     # ── Header actions ────────────────────────────────────────────────────────
     col_search, col_filter, col_add = st.columns([3, 1.5, 1])
@@ -46,10 +48,17 @@ def render():
             key="ws_filter", label_visibility="collapsed"
         )
     with col_add:
-        if st.button("➕ " + t("مشروع جديد", "New Project"), use_container_width=True, type="primary"):
-            st.session_state.show_create_project = not st.session_state.get("show_create_project", False)
+        if is_admin_or_owner:
+            if st.button("➕ " + t("مشروع جديد", "New Project"), use_container_width=True, type="primary"):
+                st.session_state.show_create_project = not st.session_state.get("show_create_project", False)
+        else:
+            st.button("🔒 " + t("غير مصرح", "Action Locked"), disabled=True, use_container_width=True)
 
     st.markdown("")
+    
+    # ── Role Notification ──
+    if not is_admin_or_owner:
+        st.info("ℹ️ **صلاحية العرض فقط (Viewer Mode):** إمكانيات الإدارة والإنشاء مقصورة على مديري الشركة (الـ Administrators).")
 
     # ── Create Project Form ───────────────────────────────────────────────────
     if st.session_state.get("show_create_project"):
@@ -184,6 +193,7 @@ def render():
                         <span style="background:rgba({','.join(str(int(s_color.lstrip('#')[j:j+2],16)) for j in (0,2,4))},0.12);color:{s_color};border:1px solid {s_color}44;border-radius:12px;padding:2px 12px;font-size:0.8rem;font-weight:700;">● {status}</span>
                         <span style="color:#64748b; font-size:0.82rem;">👤 {owner}</span>
                         <span style="color:#4b5563; font-size:0.82rem;">📅 {created}</span>
+                        <span style="color:#8b5cf6; font-size:0.82rem; margin-right:auto; padding-right:15px;">🛡️ Manager: {owner}</span>
                     </div>
                     <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.6;">
                         {desc.replace('[نشط]','').replace('[Active]','').replace('[في التنفيذ]','').replace('[In Progress]','').replace('[متوقف]','').replace('[On Hold]','').strip()}
